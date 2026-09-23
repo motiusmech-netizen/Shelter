@@ -4,6 +4,7 @@ const R = {                // рантайм (не сохраняется)
   dmap: new Map(), rmap: new Map(), grid: [], floaters: [], parts: [],
   tick1: 0, saveT: 0, offline: false, playing: false, paused: false,
   place: null, sel: null, flash: 0, powerCheck: 0,
+  carF: {}, labelW: {}, tracers: [], say: null, stranger: null, doorHold: 0, doorOpen: 0,
 };
 const SAVE_KEY = 'atom_shelter_save_v1';
 
@@ -53,7 +54,7 @@ function effMax(d) { return Math.max(1, d.mhp - d.rad); }
 function isAdult(d) { return !d.child; }
 function fullName(d) { return d.name + ' ' + (d.g === 'f' ? femSurname(d.sur) : d.sur); }
 function dmgAvg(d) { if (!d.weapon) return 1.2; const w = WEAPONS[d.weapon.id]; return (w[1] + w[2]) / 2; }
-function dwellerDps(d) { return dmgAvg(d) * (0.9 + 0.02 * d.lvl) * (1 + stat(d, 0) * 0.015); }
+function dwellerDps(d) { return dmgAvg(d) * (0.9 + 0.02 * d.lvl) * (1 + stat(d, 0) * 0.015) * (1 + petBonus(d, 'dmg')); }
 
 function genDweller(o = {}) {
   const g = o.g || (rnd() < 0.5 ? 'm' : 'f');
@@ -64,9 +65,9 @@ function genDweller(o = {}) {
   const d = {
     id: uid(), name: pick(g === 'm' ? NAMES_M : NAMES_F), sur: pick(SURNAMES), g, rar: rarity,
     lvl: 1, xp: 0, sp, mhp: 105, hp: 105, rad: 0, hap: 60, lu: false,
-    outfit: null, weapon: null, room: null, st: 'vault', child: 0, preg: 0, father: 0, par: null, cd: 0, tp: 0,
-    look: { skin: pick(SKINS), hair: pick(HAIRS), hs: ri(0, 3) },
-    px: rf(10, 100), tx: 0, wait: 0, face: 1, walk: 0,
+    outfit: null, weapon: null, pet: null, room: null, st: 'vault', child: 0, preg: 0, father: 0, par: null, cd: 0, tp: 0,
+    look: { skin: pick(SKINS), hair: pick(HAIRS), hs2: pick(g === 'm' ? HAIR_M : HAIR_F), beard: g === 'm' && rnd() < 0.35 ? pick(['stubble', 'mustache', 'beard']) : 'none' },
+    x: 120, fy: 0, tx: 120, path: null, wait: 0, face: 1, walk: 0,
   };
   if (o.lvl) { d.lvl = o.lvl; d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); d.hp = d.mhp; }
   return d;
@@ -75,6 +76,7 @@ function genLegend() {
   const L = pick(LEGENDS);
   const d = genDweller({ g: L.g, rarity: 2, lvl: ri(3, 8) });
   d.name = L.n; d.sur = L.s; d.sp = L.sp.slice(); d.leg = true;
+  d.look.hs2 = L.hair; d.look.beard = L.beard || 'none';
   d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); d.hp = d.mhp;
   d.weapon = { u: uid(), k: 'w', id: L.w };
   d.outfit = { u: uid(), k: 'o', id: L.o };
@@ -187,9 +189,9 @@ function newGame(vaultNo) {
   S = {
     v: 1, vault: vaultNo, time: 0, saved: Date.now(), nid: 0,
     res: { power: 70, food: 70, water: 70, caps: 1200, quantum: 5, stim: 3, rad: 2 },
-    rooms: [], dwellers: [], arrivals: [], inv: [], junk: {}, lunch: 1, robots: [],
+    rooms: [], dwellers: [], arrivals: [], inv: [], junk: {}, lunch: 1, robots: [], pets: [], todMode: 'auto',
     objs: [], objN: 0, quests: { list: [], active: [], refresh: 0 }, incs: [],
-    timers: { arrive: 25, inc: 360, raid: 420 },
+    timers: { arrive: 25, inc: 360, raid: 420, stranger: 200 },
     stats: { capsEarned: 0, kills: 0, babies: 0, built: 0 },
     tut: 0, tutDone: false, adT: 0, cam: null, lastRush: 0,
   };
@@ -197,10 +199,8 @@ function newGame(vaultNo) {
   S.rooms.push({ id: uid(), t: 'elev', f: 0, c: DOOR_W, l: 1, s: 1, w: [] });
   S.rooms.push({ id: uid(), t: 'elev', f: 1, c: DOOR_W, l: 1, s: 1, w: [] });
   for (let i = 0; i < 5; i++) {
-    const d = genDweller();
+    const d = genDweller(i === 0 ? { g: 'm' } : i === 1 ? { g: 'f' } : {});
     d.st = 'arrive';
-    if (i === 0) d.g = 'm';
-    if (i === 1) { d.g = 'f'; d.name = pick(NAMES_F); }
     S.arrivals.push(d);
   }
   S.inv.push(newItem('w', 'p10'), newItem('w', 'bat'), newItem('w', 'pipe'), newItem('o', 'robe'), newItem('o', 'vest'));
@@ -232,11 +232,29 @@ function pickSave() {
   if (a && b) return (b.saved || 0) > (a.saved || 0) ? b : a;
   return a || b;
 }
+function migrate() {
+  // сохранения первой версии: координаты жителей и внешность
+  for (const d of S.dwellers.concat(S.arrivals)) {
+    if (!d.look.hs2) { d.look.hs2 = pick(d.g === 'm' ? HAIR_M : HAIR_F); d.look.beard = 'none'; }
+    if (d.x == null) {
+      const r = d.room ? S.rooms.find(q => q.id === d.room) : S.rooms[0];
+      d.x = r ? r.c * CW + clamp((d.px || 30) * (CW / 40), 12, roomW(r) * CW - 12) : 120;
+      if (r && r.t === 'door') d.x = Math.max(d.x, 80);
+      d.fy = r ? r.f : 0; d.tx = d.x; d.path = null;
+    }
+    delete d.px;
+    if (d.pet === undefined) d.pet = null;
+  }
+  for (const q of S.quests.list.concat(S.quests.active)) { if (q.mx == null) { q.mx = rnd(); q.my = rnd(); } }
+}
 function loadGame(data) {
   S = data;
   S.incs = S.incs || [];
   S.robots = S.robots || [];
   S.junk = S.junk || {};
+  S.pets = S.pets || [];
+  S.todMode = S.todMode || 'auto';
+  migrate();
   S.stats = S.stats || { capsEarned: 0, kills: 0, babies: 0, built: 0 };
   reindex();
   if (S.cam) { Cam.x = S.cam.x; Cam.y = S.cam.y; Cam.z = S.cam.z; }

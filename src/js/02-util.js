@@ -1,4 +1,6 @@
 // ===== Утилиты =====
+const FONT_D = '"Oswald", "Arial Narrow", "Roboto Condensed", sans-serif';
+const FONT_M = '"IBM Plex Mono", "Consolas", monospace';
 const rnd = Math.random;
 const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 const rf = (a, b) => a + rnd() * (b - a);
@@ -105,6 +107,10 @@ const ICON = {
   child: 'M12 3.5a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM7.5 21.5l1-8h7l1 8z',
   clock: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 4h2v5.6l3.8 2.3-1 1.7-4.8-2.9z',
   junk: gearPath(12, 12, 10, 7.5, 6, 3),
+  paw: 'M12 11.5c-3.4 0-6.6 4.4-6.6 7.2 0 1.8 1.5 2.8 3.2 2.8 1.5 0 2.2-.8 3.4-.8s1.9.8 3.4.8c1.7 0 3.2-1 3.2-2.8 0-2.8-3.2-7.2-6.6-7.2zM5 7.2a2.2 2.8 0 1 1 0 5.6 2.2 2.8 0 0 1 0-5.6zm14 0a2.2 2.8 0 1 1 0 5.6 2.2 2.8 0 0 1 0-5.6zM9 2.8a2.3 3 0 1 1 0 6 2.3 3 0 0 1 0-6zm6 0a2.3 3 0 1 1 0 6 2.3 3 0 0 1 0-6z',
+  scissors: 'M6.5 3a3.5 3.5 0 0 1 3.2 4.9L12 10.2l7.3-7.3 1.8 1.8L9.7 16.1A3.5 3.5 0 1 1 7.9 14.3l2.3-2.3-2.3-2.3A3.5 3.5 0 1 1 6.5 3zm0 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm0 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7.4-2.1 1.8-1.8 5.4 5.4-1.8 1.8z',
+  wrench: 'M20.5 6.6a5.5 5.5 0 0 1-7.2 6.6l-7.5 7.5a2.1 2.1 0 0 1-3-3l7.5-7.5a5.5 5.5 0 0 1 6.6-7.2l-3.2 3.2.6 2.8 2.8.6z',
+  sun: 'M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z',
 };
 const P2D = {};
 function icoPath(k) { return P2D[k] || (P2D[k] = new Path2D(ICON[k])); }
@@ -148,10 +154,32 @@ const Snd = {
   click() { this.tone(520, 0.05, 'square', 0.04); },
   collect() { this.tone(660, 0.07, 'triangle', 0.1); this.tone(990, 0.09, 'triangle', 0.08, 0, 0.06); },
   coin() { this.tone(1200, 0.05, 'square', 0.05); this.tone(1600, 0.08, 'square', 0.05, 0, 0.05); },
-  build() { this.tone(140, 0.12, 'sawtooth', 0.08); this.tone(220, 0.1, 'square', 0.06, 0, 0.1); this.tone(330, 0.15, 'triangle', 0.08, 0, 0.2); },
+  build() { this.noise(0.18, 0.12, 700); this.tone(140, 0.12, 'sawtooth', 0.06); this.tone(220, 0.1, 'square', 0.05, 0, 0.12); this.tone(330, 0.18, 'triangle', 0.07, 0, 0.24); },
   level() { [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.12, 'triangle', 0.09, 0, i * 0.08)); },
   alarm() { for (let i = 0; i < 3; i++) this.tone(480, 0.35, 'sawtooth', 0.06, 380, i * 0.4); },
   bad() { this.tone(200, 0.2, 'square', 0.06, -80); },
   open() { this.tone(300, 0.08, 'triangle', 0.08, 300); },
+  shot(beam) {
+    if (!this.on || !this.ctx || this.paused) return;
+    const n = performance.now();
+    if (n - (this._shotT || 0) < 70) return;
+    this._shotT = n;
+    if (beam) this.tone(1400, 0.08, 'sawtooth', 0.025, -900);
+    else this.noise(0.06, 0.05, 1800);
+  },
+  noise(dur, vol, freq) {
+    if (!this.on || !this.ctx || this.paused) return;
+    try {
+      const t = this.ctx.currentTime;
+      const len = Math.floor(this.ctx.sampleRate * dur);
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      const src = this.ctx.createBufferSource(), f = this.ctx.createBiquadFilter(), g = this.ctx.createGain();
+      src.buffer = buf; f.type = 'lowpass'; f.frequency.value = freq || 1200; g.gain.value = vol;
+      src.connect(f); f.connect(g); g.connect(this.master); src.start(t);
+    } catch (e) {}
+  },
+  stranger() { [392, 523, 659, 784, 659, 523].forEach((f, i) => this.tone(f, 0.22, 'triangle', 0.06, 0, i * 0.14)); },
   baby() { [880, 1175, 1318].forEach((f, i) => this.tone(f, 0.15, 'sine', 0.08, 0, i * 0.1)); },
 };

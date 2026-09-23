@@ -101,6 +101,11 @@ function onTap(sx, sy) {
     } else toast('Нажмите на подсвеченное место', 'warn');
     return;
   }
+  // таинственный незнакомец
+  if (R.stranger) {
+    const s = R.stranger, r = RM(s.room);
+    if (r) { const sx0 = roomX(r) + s.x, sy0 = roomY(r) + FEET; if (Math.abs(w.x - sx0) < 14 && w.y > sy0 - 46 && w.y < sy0 + 6) { catchStranger(); return; } }
+  }
   // пузыри ресурсов
   const bs = 1 / clamp(Cam.z, 0.55, 1.3);
   for (const r of S.rooms) {
@@ -109,15 +114,15 @@ function onTap(sx, sy) {
     if (Math.hypot(w.x - p.x, w.y - p.y) < 20 * bs) { collectRoom(r); return; }
   }
   // улица: прибывшие и вернувшиеся
-  const gy = SURF + FH - 6;
-  if (w.x < 0 && w.y > gy - 60 && w.y < gy + 10) {
+  const gy = GROUND_Y;
+  if (w.x < PORTAL.x1 && w.y > gy - 70 && w.y < gy + 12) {
     let k = 0;
     for (const d of S.dwellers) {
-      if (d.st !== 'explore' || !d.ex || !d.ex.home) continue;
-      const x = -40 - (S.arrivals.length + k) * 24; k++;
+      if (d.st !== 'explore' || !d.ex || !d.ex.home || d.leaving) continue;
+      const x = PORTAL.x0 - 30 - (S.arrivals.length + k) * 22; k++;
       if (Math.abs(w.x - x) < 14) { collectExplorer(d); return; }
     }
-    if (S.arrivals.length && w.x > -34 - S.arrivals.length * 24 - 14) { UI.open(arrivalsView()); return; }
+    if (S.arrivals.length && w.x > PORTAL.x0 - 22 - S.arrivals.length * 22 - 14 && w.x < PORTAL.x1) { UI.open(arrivalsView(), true); return; }
   }
   // жители
   let best = null, bd = 1e9;
@@ -126,7 +131,7 @@ function onTap(sx, sy) {
     if (d.hide) continue;
     const p = dwellerWorldPos(d);
     if (!p) continue;
-    const h = (d.child ? 22 : 32);
+    const h = (d.child ? 30 : 44);
     if (w.x > p.x - 8 - tol && w.x < p.x + 8 + tol && w.y > p.y - h - tol && w.y < p.y + 4) {
       const dd = Math.abs(w.x - p.x);
       if (dd < bd) { bd = dd; best = d; }

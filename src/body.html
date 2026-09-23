@@ -1,20 +1,31 @@
 <div id="app">
   <canvas id="cv"></canvas>
 
-  <div id="loading"><span class="spin" data-ic="caps"></span><p>Открываем гермодверь…</p></div>
+  <div id="loading">
+    <div class="boot">
+      <p>ТЕРМИНАЛ СМОТРИТЕЛЯ · МОДЕЛЬ 2077</p>
+      <p>ПРОВЕРКА ГЕРМЕТИЧНОСТИ…… <b>НОРМА</b></p>
+      <p>РЕАКТОР…………………… <b>НОРМА</b></p>
+      <p>ЗАГРУЗКА УБЕЖИЩА<span class="caret">_</span></p>
+    </div>
+  </div>
 
   <section id="menu" hidden>
-    <div class="menu-card">
+    <div class="menu-wrap">
       <div class="logo">
+        <div class="logo-gear" data-ic="door"></div>
         <small>Подземная система выживания</small>
-        <h1>Атомное<span>Убежище</span></h1>
-        <p>Постройте убежище, спасите выживших и переживите Пустошь.</p>
+        <h1><span class="l1">Атомное</span><span class="l2">Убежище</span></h1>
+        <p>Постройте убежище. Спасите выживших. Переживите Пустошь.</p>
       </div>
-      <div class="menu-btns">
-        <button class="btn primary big" id="m-continue" data-a="continue" hidden><span>Продолжить</span><small></small></button>
-        <button class="btn big" data-a="newgame">Новое убежище</button>
-        <button class="btn" data-a="help">Как играть</button>
-        <button class="btn ghost" id="m-sound" data-a="sound">Звук</button>
+      <div class="term menu-term">
+        <div class="term-scr">
+          <div class="term-title">ТЕРМИНАЛ СМОТРИТЕЛЯ</div>
+          <button class="mbtn pri" id="m-continue" data-a="continue" hidden><span>Продолжить</span><small></small></button>
+          <button class="mbtn" data-a="newgame"><span>Новое убежище</span></button>
+          <button class="mbtn" data-a="help"><span>Как играть</span></button>
+          <button class="mbtn" id="m-sound" data-a="sound"><span>Звук</span></button>
+        </div>
       </div>
     </div>
   </section>
@@ -22,26 +33,30 @@
   <div id="game-ui" hidden>
     <div id="top">
       <header id="hud"></header>
-      <div id="alerts"></div>
-      <div id="place" hidden><div><b></b><small></small></div><button class="btn small" data-a="cancelPlace">Отмена</button></div>
+      <div id="place" hidden><span class="pl-ic" data-ic="build"></span><div><b></b><small></small></div><button class="t-btn small" data-a="cancelPlace">Отмена</button></div>
       <div id="toasts"></div>
     </div>
-    <div id="tut" hidden><span class="tut-ic" data-ic="smile"></span><p></p><button class="link" data-a="tutSkip">Пропустить</button></div>
+    <div id="rail"></div>
+    <div id="tut" hidden><span class="tut-ava" data-ic="smile"></span><p></p><button class="link" data-a="tutSkip">Пропустить</button></div>
     <section id="sheet" hidden>
-      <div class="sheet-h">
-        <button id="sheet-back" class="icon-btn" data-a="back" aria-label="Назад" data-ic="back"></button>
-        <h2 id="sheet-t"></h2>
-        <button class="icon-btn" data-a="close" aria-label="Закрыть" data-ic="x"></button>
+      <div class="term">
+        <i class="screw s1"></i><i class="screw s2"></i><i class="screw s3"></i><i class="screw s4"></i>
+        <div class="term-scr">
+          <div class="term-head">
+            <button id="sheet-back" class="t-icon" data-a="back" aria-label="Назад" data-ic="back"></button>
+            <h2 id="sheet-t"></h2>
+            <button class="t-icon" data-a="close" aria-label="Закрыть" data-ic="x"></button>
+          </div>
+          <div id="sheet-b"></div>
+        </div>
       </div>
-      <div id="sheet-b"></div>
     </section>
     <nav id="bar">
-      <button data-a="build" data-ic="build"><span>Строить</span></button>
-      <button data-a="dwellers" data-ic="people"><span>Жители</span></button>
-      <button data-a="inventory" data-ic="bag"><span>Склад</span></button>
-      <button data-a="waste" data-ic="map"><span>Пустошь</span></button>
-      <button data-a="objectives" data-ic="list"><span>Цели</span><em id="obj-badge" class="badge" hidden></em></button>
-      <button data-a="menu" data-ic="menu"><span>Меню</span></button>
+      <button data-a="dwellers"><i data-ic="people"></i><span>Жители</span></button>
+      <button data-a="inventory"><i data-ic="bag"></i><span>Склад</span></button>
+      <button data-a="build" class="dock-main"><i data-ic="build"></i><span>Строить</span></button>
+      <button data-a="waste"><i data-ic="map"></i><span>Пустошь</span></button>
+      <button data-a="menu"><i data-ic="menu"></i><span>Пип-бой</span></button>
     </nav>
   </div>
 
