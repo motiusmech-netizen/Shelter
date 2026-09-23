@@ -1,0 +1,49 @@
+<div id="app">
+  <canvas id="cv"></canvas>
+
+  <div id="loading"><span class="spin" data-ic="caps"></span><p>Открываем гермодверь…</p></div>
+
+  <section id="menu" hidden>
+    <div class="menu-card">
+      <div class="logo">
+        <small>Подземная система выживания</small>
+        <h1>Атомное<span>Убежище</span></h1>
+        <p>Постройте убежище, спасите выживших и переживите Пустошь.</p>
+      </div>
+      <div class="menu-btns">
+        <button class="btn primary big" id="m-continue" data-a="continue" hidden><span>Продолжить</span><small></small></button>
+        <button class="btn big" data-a="newgame">Новое убежище</button>
+        <button class="btn" data-a="help">Как играть</button>
+        <button class="btn ghost" id="m-sound" data-a="sound">Звук</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="game-ui" hidden>
+    <div id="top">
+      <header id="hud"></header>
+      <div id="alerts"></div>
+      <div id="place" hidden><div><b></b><small></small></div><button class="btn small" data-a="cancelPlace">Отмена</button></div>
+      <div id="toasts"></div>
+    </div>
+    <div id="tut" hidden><span class="tut-ic" data-ic="smile"></span><p></p><button class="link" data-a="tutSkip">Пропустить</button></div>
+    <section id="sheet" hidden>
+      <div class="sheet-h">
+        <button id="sheet-back" class="icon-btn" data-a="back" aria-label="Назад" data-ic="back"></button>
+        <h2 id="sheet-t"></h2>
+        <button class="icon-btn" data-a="close" aria-label="Закрыть" data-ic="x"></button>
+      </div>
+      <div id="sheet-b"></div>
+    </section>
+    <nav id="bar">
+      <button data-a="build" data-ic="build"><span>Строить</span></button>
+      <button data-a="dwellers" data-ic="people"><span>Жители</span></button>
+      <button data-a="inventory" data-ic="bag"><span>Склад</span></button>
+      <button data-a="waste" data-ic="map"><span>Пустошь</span></button>
+      <button data-a="objectives" data-ic="list"><span>Цели</span><em id="obj-badge" class="badge" hidden></em></button>
+      <button data-a="menu" data-ic="menu"><span>Меню</span></button>
+    </nav>
+  </div>
+
+  <div id="modal" hidden></div>
+</div>
