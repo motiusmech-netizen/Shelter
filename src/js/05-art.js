@@ -253,7 +253,7 @@ function roomGeom(W, H) {
 
 // ---------- кэш комнат ----------
 function artFor(r) {
-  const key = r.t === 'elev' ? 'elev|' + ART.k : r.t + '|' + r.s + '|' + r.l + '|' + ART.k;
+  const key = r.t === 'elev' ? 'elev|' + ART.k : r.t + '|' + r.s + '|' + r.l + '|' + ART.k + (r.t === 'door' && S ? '|' + S.vault : '');
   let a = ART.cache.get(key);
   if (!a) { a = buildRoomArt(r.t, r.s, r.l); ART.cache.set(key, a); }
   return a;
@@ -1072,55 +1072,43 @@ const INTERIOR = {
     const { g, G } = A;
     const b = G.by1 + 2;
     const W = G.bx1 - G.bx0;
+    // трафаретная надпись на стене за откатом двери
+    const num = S ? S.vault : '000';
+    g.save();
+    g.fillStyle = '#e8b422'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.globalAlpha = 0.6; g.font = `700 6px ${FONT_D}`; g.fillText('УБЕЖИЩЕ', 112, 26);
+    g.globalAlpha = 0.5; g.font = `700 19px ${FONT_D}`; g.fillText(num, 112, 45);
+    g.globalCompositeOperation = 'destination-out';
+    const rng = seeded(71);
+    for (let i = 0; i < 90; i++) { g.globalAlpha = 0.3 + rng() * 0.6; g.fillRect(88 + rng() * 48, 18 + rng() * 30, 0.5 + rng() * 1.6, 0.4 + rng() * 0.8); }
+    g.restore();
+    g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(84, 48, 56, 0.8);
+    // трубы и крепление гидравлики под потолком
+    pipeH(g, 76, G.bx1, G.by0 + 5.5, 1.1, '#8a6a3a');
+    g.fillStyle = vgrad(g, G.Y0, G.by0 + 4, ['#3a3e42', '#6a7075']); rr(g, 126, G.Y0, 12, 10, 1.5); g.fill();
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(129, G.Y0 + 7, 0.6, 0, 7); g.arc(135, G.Y0 + 7, 0.6, 0, 7); g.fill();
     // пульт управления дверью
-    const px = G.bx0 + W * 0.62;
-    blk(g, px, b, 22, 18, 3, '#4a4f55');
-    screenBox(g, px + 3, b - 15, 9, 6, '#6aff9a', A);
-    lightDots(g, px + 14, b - 13, 2, ['#ff4a3a', '#ffd84a'], A);
-    g.fillStyle = '#c22a2a'; g.fillRect(px + 16, b - 9, 1.6, 6); g.beginPath(); g.arc(px + 16.8, b - 9.5, 1.6, 0, 7); g.fill();
-    // шкафчики охраны
-    blk(g, G.bx1 - 18, b, 14, 30, 2, '#5a6a5a');
-    g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(G.bx1 - 11.5, b - 29, 0.6, 28);
-    for (let i = 0; i < 3; i++) g.fillRect(G.bx1 - 16, b - 26 + i * 2, 3, 0.6);
-    // жёлто-чёрная разметка
+    const px = G.bx1 - 14;
+    blk(g, px, b, 13, 33, 2.4, '#4a5057');
+    screenBox(g, px + 2, b - 30, 9, 7, '#6aff9a', A);
+    lightDots(g, px + 2.6, b - 20, 3, ['#ff4a3a', '#ffd84a', '#6aff9a'], A);
+    g.fillStyle = '#2a2d31'; rr(g, px + 2, b - 16, 9, 7, 1); g.fill();
+    g.fillStyle = '#c22a2a'; g.beginPath(); g.arc(px + 6.5, b - 12.5, 2.2, 0, 7); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.arc(px + 5.9, b - 13.2, 0.8, 0, 7); g.fill();
+    hazard(g, px + 1, b - 5.5, 11, 2);
+    // камера наблюдения
+    g.fillStyle = '#2c3034'; g.fillRect(G.bx1 - 6, G.by0 + 1, 1.2, 4);
+    g.fillStyle = vgrad(g, G.by0 + 4, G.by0 + 9, ['#b9bfc3', '#6a7075']); rr(g, G.bx1 - 14, G.by0 + 4, 10, 4.6, 1.2); g.fill();
+    g.fillStyle = '#1a1c1e'; g.beginPath(); g.arc(G.bx1 - 14, G.by0 + 6.3, 1.9, 0, 7); g.fill();
+    A.anc.push({ k: 'blink', x: G.bx1 - 6.5, y: G.by0 + 5.4, col: '#ff3a2a', ph: 0.5 });
+    // жёлто-чёрная разметка стены
     hazard(g, G.bx0, G.by1 - 3, W, 2.2);
-    poster(g, px + 2, G.by0 + 4, 16, 10, '#f2b705', '#1d1d1d', 'gear');
+    // рельс, по которому откатывается дверь
+    const ry = G.Y1 - 5;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(G.X0 + 2, ry - 1.2, 150, 4.6);
+    for (let x = G.X0 + 4; x < G.X0 + 152; x += 6) { g.fillStyle = '#2a2622'; g.fillRect(x, ry - 0.6, 3.4, 3.8); }
+    g.fillStyle = vgrad(g, ry - 1, ry + 2, ['#e4e8ea', '#8a9196', '#3e4448']); g.fillRect(G.X0 + 2, ry - 1, 150, 2.2);
+    g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(G.X0 + 2, ry - 1, 150, 0.4);
+    hazard(g, G.X0 + 2, ry + 2.2, 150, 1.6);
   },
 };
-
-// Ячейка двери: большая шестерня
-function drawGearDoor(g, cx, cy, rad, rot, vault) {
-  g.save(); g.translate(cx, cy); g.rotate(rot);
-  g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 8 * Cam.dpr * Cam.z; g.shadowOffsetX = 2 * Cam.dpr * Cam.z;
-  g.fillStyle = '#7d8284';
-  g.beginPath();
-  const n = 12;
-  for (let i = 0; i < n; i++) {
-    const a0 = (i / n) * Math.PI * 2, a1 = ((i + 0.5) / n) * Math.PI * 2;
-    const t0 = a0 + 0.06, t1 = a1 - 0.06;
-    g.lineTo(Math.cos(a0) * rad * 0.9, Math.sin(a0) * rad * 0.9);
-    g.lineTo(Math.cos(t0) * rad, Math.sin(t0) * rad);
-    g.lineTo(Math.cos(t1) * rad, Math.sin(t1) * rad);
-    g.lineTo(Math.cos(a1) * rad * 0.9, Math.sin(a1) * rad * 0.9);
-  }
-  g.closePath(); g.fill();
-  g.shadowColor = 'transparent';
-  const gr = g.createRadialGradient(-rad * 0.3, -rad * 0.35, rad * 0.1, 0, 0, rad);
-  gr.addColorStop(0, '#d9dcdc'); gr.addColorStop(0.6, '#9ba0a2'); gr.addColorStop(1, '#5d6264');
-  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rad * 0.86, 0, 7); g.fill();
-  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = rad * 0.02; g.beginPath(); g.arc(0, 0, rad * 0.86, 0, 7); g.stroke();
-  // болты
-  g.fillStyle = '#4a4e50';
-  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; g.beginPath(); g.arc(Math.cos(a) * rad * 0.78, Math.sin(a) * rad * 0.78, rad * 0.028, 0, 7); g.fill(); }
-  // жёлтое кольцо и синий центр
-  const yg = g.createRadialGradient(-rad * 0.2, -rad * 0.25, rad * 0.05, 0, 0, rad * 0.66);
-  yg.addColorStop(0, '#ffe07a'); yg.addColorStop(1, '#c98f14');
-  g.fillStyle = yg; g.beginPath(); g.arc(0, 0, rad * 0.66, 0, 7); g.fill();
-  const bg = g.createRadialGradient(-rad * 0.15, -rad * 0.2, rad * 0.05, 0, 0, rad * 0.52);
-  bg.addColorStop(0, '#4f8ad8'); bg.addColorStop(1, '#1d4585');
-  g.fillStyle = bg; g.beginPath(); g.arc(0, 0, rad * 0.52, 0, 7); g.fill();
-  g.fillStyle = '#ffd24a'; g.font = `700 ${rad * 0.5}px ${FONT_D}`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(vault, 0, rad * 0.04);
-  g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(-rad * 0.25, -rad * 0.35, rad * 0.45, rad * 0.2, -0.5, 0, 7); g.fill();
-  g.restore();
-}

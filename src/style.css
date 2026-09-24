@@ -281,10 +281,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .big { display: flex; flex-direction: column; align-items: center; min-width: 46px; font: 700 21px/1 var(--fd); color: var(--ph-hi); }
 .big em { font: 500 10px var(--fm); color: var(--ph-dim); font-style: normal; letter-spacing: .06em; margin-bottom: 2px; }
 .up .ic { color: var(--ph-hi); }
-.ava { position: relative; width: 40px; height: 40px; border-radius: 6px; overflow: hidden; flex: none; border: 1px solid var(--ph-line); background: radial-gradient(circle at 50% 30%, #1e4a2a, #04120a); }
-.ava i { position: absolute; left: 50%; top: 8px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--skin); box-shadow: 0 -3px 0 0 var(--hair); }
-.ava em { position: absolute; left: 50%; bottom: -8px; width: 28px; height: 22px; margin-left: -14px; border-radius: 50% 50% 0 0; background: var(--suit); }
-.ava.kid i { width: 13px; height: 13px; margin-left: -6.5px; top: 12px; } .ava.kid em { width: 21px; height: 16px; margin-left: -10.5px; }
+.ava { position: relative; width: 44px; height: 44px; border-radius: 7px; overflow: hidden; flex: none; border: 1px solid var(--ph-line); background: #08130c; box-shadow: inset 0 0 0 1px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.4); }
+.ava img { display: block; width: 100%; height: 100%; }
+.ava::after { content: ''; position: absolute; inset: 0; border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 10px rgba(0,0,0,.5); pointer-events: none; }
 .ava.leg { border-color: var(--amber); box-shadow: 0 0 8px rgba(255,194,74,.5); }
 .list { display: flex; flex-direction: column; }
 .row { display: flex; align-items: center; gap: 10px; padding: 9px 6px; border-bottom: 1px dashed var(--ph-line); text-align: left; width: 100%; }

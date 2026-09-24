@@ -155,7 +155,8 @@ async function boot() {
   requestAnimationFrame(t => { lastT = t; frame(t); });
 }
 // хук для автотестов
-window.__shelter = { get S() { return S; }, R, Cam, UI, ART, WORLD, sim, simOffline, ACT, newGame, startPlaying, buildRoom, spotsFor, spawnArrival, acceptArrival, startIncident, startRaid, spawnStranger, genPet, RM, D, assign, upgradeRoom, roomView, craftView, questsView, centerOn };
+window.__shelterIcons = ICON;
+window.__shelter = { get S() { return S; }, R, Cam, UI, ART, WORLD, sim, simOffline, ACT, newGame, startPlaying, buildRoom, spotsFor, spawnArrival, acceptArrival, startIncident, startRaid, spawnStranger, genPet, RM, D, assign, upgradeRoom, roomView, craftView, questsView, centerOn, drawHuman, dwellerParams, genDweller, CHR, outfitLook };
 // предпросмотр в веб-обёртке: состояние переживает обновление страницы
 const HOT = window.claude && window.claude.hot;
 try { if (HOT && HOT.snapshot) HOT.snapshot(() => (S && R.playing ? { save: serialize() } : {})); } catch (e) {}

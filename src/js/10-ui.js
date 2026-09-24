@@ -73,8 +73,7 @@ function confirmBox(text, yes, onYes, danger) {
 
 // ===== Мелкие шаблоны =====
 function av(d) {
-  const suit = d.outfit ? OUTFITS[d.outfit.id][3] : '#2f6db3';
-  return `<span class="ava${d.child ? ' kid' : ''}${d.rar === 2 ? ' leg' : ''}" style="--skin:${d.look.skin};--suit:${suit};--hair:${d.look.hair}"><i></i><em></em></span>`;
+  return `<span class="ava${d.child ? ' kid' : ''}${d.rar === 2 ? ' leg' : ''}"><img src="${avatarURL(d)}" alt=""></span>`;
 }
 function locText(d) {
   if (d.st === 'dead') return d.deadIn === 'waste' ? 'Погиб(ла) в Пустоши' : 'Погиб(ла)';

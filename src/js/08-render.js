@@ -275,40 +275,66 @@ function drawLabels(vis) {
   }
 }
 function drawDoor(r, x, y, t) {
-  // дверь-шестерня: откатывается влево, когда кто-то проходит
+  // дверь-шестерня: засовы уходят в раму, дверь выдвигается и откатывается по рельсу вправо
   const near = S.dwellers.some(d => (d.st === 'vault' || d.leaving) && d.fy < 0.5 && d.x > -70 && d.x < 60 && (d.path && d.path.length)) || (S.incs.some(i => i.ext && r.hp <= 0 && i.room === r.id));
   const tgt = near || R.doorHold > 0 ? 1 : 0;
-  R.doorOpen = (R.doorOpen || 0) + (tgt - (R.doorOpen || 0)) * 0.06;
+  const dt = clamp(t - (R.doorT ?? t), 0, 0.1); R.doorT = t;
+  R.doorOpen = clamp((R.doorOpen || 0) + clamp(tgt - (R.doorOpen || 0), -0.7 * dt, 0.7 * dt), 0, 1);
   const o = R.doorOpen;
-  const cx = x + 30 - o * 58, cy = y + 40;
+  if (o > 0.02 && o < 0.98 && Math.abs(tgt - o) > 0.01 && !R.doorSnd) { R.doorSnd = true; Snd.door(); }
+  if (o <= 0.02 || o >= 0.98) R.doorSnd = false;
   const breach = S.incs.some(i => i.ext && i.room === r.id && r.hp > 0);
-  ctx.fillStyle = '#090909'; ctx.beginPath(); ctx.arc(x + 30, cy, 30.5, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#3a3c3e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x + 30, cy, 32, 0, 7); ctx.stroke();
-  if (o > 0.05) { ctx.fillStyle = 'rgba(255,220,160,.12)'; ctx.beginPath(); ctx.arc(x + 30, cy, 29, 0, 7); ctx.fill(); }
-  const shake = breach ? Math.sin(t * 40) * 0.6 : 0;
-  ctx.save(); ctx.beginPath(); ctx.rect(PORTAL.x0 + 8, y - 20, x + 80 - PORTAL.x0, FH + 20); ctx.clip();
-  drawGearDoor(ctx, cx + shake, cy, 29, -o * 2.2, S.vault);
-  ctx.restore();
-  // гидравлический рычаг
-  ctx.strokeStyle = '#5a5e62'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x + 64, y + 16); ctx.lineTo(cx + 12, cy - 10); ctx.stroke();
-  ctx.strokeStyle = '#9aa0a4'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x + 64, y + 16); ctx.lineTo(x + 64 + (cx + 12 - x - 64) * 0.5, y + 16 + (cy - 10 - y - 16) * 0.5); ctx.stroke();
-  // маячки при открытии и набеге
-  if (o > 0.1 || breach) {
-    const a = t * 6;
-    ctx.save(); ctx.beginPath(); ctx.rect(x + 6, y + 6, DOOR_W * CW - 12, FH - 13); ctx.clip();
-    ctx.globalCompositeOperation = 'lighter';
-    for (const bx of [x + 70, x + 150]) {
-      const col = breach ? '255,50,30' : '255,190,40';
-      ctx.fillStyle = `rgba(${col},.2)`;
-      ctx.beginPath(); ctx.moveTo(bx, y + 9); ctx.arc(bx, y + 9, 60, a, a + 0.6); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = `rgba(${col},.9)`; ctx.beginPath(); ctx.arc(bx, y + 9, 1.8, 0, 7); ctx.fill();
-    }
-    ctx.globalCompositeOperation = 'source-over';
+  const cx = x + 40, cy = y + 42.5;
+  const shake = breach ? Math.sin(t * 38) * 0.7 : 0;
+  const kk = Math.min(4, Math.max(1, Math.ceil(Cam.z * Cam.dpr)));
+  // свет с поверхности на полу комнаты
+  if (o > 0.05) {
+    const st = WORLD.st, ex = st ? mixc(st.hor, '#ffffff', 0.3) : '#fff0c8';
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.translate(cx + 10, y + 71); ctx.scale(1, 0.22);
+    const gr = ctx.createRadialGradient(0, 0, 2, 0, 0, 60);
+    gr.addColorStop(0, rgba(ex, 0.3 * o)); gr.addColorStop(1, rgba(ex, 0));
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, 60, 0, 7); ctx.fill();
     ctx.restore();
   }
-  if (r.hp < DOOR_HP[r.l - 1]) {
-    ctx.fillStyle = 'rgba(0,0,0,.7)'; rr(ctx, x + 8, y - 8, 60, 5, 2); ctx.fill();
-    ctx.fillStyle = r.hp > DOOR_HP[r.l - 1] * 0.35 ? '#ffc24a' : '#ff4a3a'; rr(ctx, x + 8.5, y - 7.5, 59 * (r.hp / DOOR_HP[r.l - 1]), 4, 1.5); ctx.fill();
+  // рычаг крепится к оси двери сзади: рисуем до двери
+  const p1 = smooth01(clamp(o / 0.22, 0, 1)), p2 = smooth01(clamp((o - 0.22) / 0.78, 0, 1));
+  const hubX = cx + 72 * p2 + shake;
+  ctx.save(); ctx.beginPath(); ctx.rect(x + 2, y + 2, DOOR_W * CW - 4, FH - 4); ctx.clip();
+  drawVaultDoor(ctx, cx, cy, o, t, { k: kk, lvl: r.l, num: S.vault, shake, roll: 72, arm: () => drawPiston(ctx, x + 132, y + 12, hubX, cy) });
+  ctx.restore();
+  // проблесковые маячки
+  if (o > 0.02 || breach) {
+    const col = breach ? '255,60,40' : '255,184,40';
+    ctx.save(); ctx.beginPath(); ctx.rect(x + 6, y + 6, DOOR_W * CW - 12, FH - 13); ctx.clip();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const [bx, ph] of [[x + 90, 0], [x + 150, 1.6]]) {
+      const a = t * 5 + ph, by = y + 9;
+      const sw = Math.cos(a);
+      const beam = ctx.createRadialGradient(bx, by, 0, bx, by, 70);
+      beam.addColorStop(0, `rgba(${col},.32)`); beam.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = beam;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.arc(bx, by, 70, Math.PI * 0.5 + sw * 1.1 - 0.28, Math.PI * 0.5 + sw * 1.1 + 0.28); ctx.closePath(); ctx.fill();
+      const core = ctx.createRadialGradient(bx, by, 0, bx, by, 6);
+      core.addColorStop(0, `rgba(${col},${0.6 + 0.4 * Math.abs(Math.sin(a))})`); core.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = core; ctx.beginPath(); ctx.arc(bx, by, 6, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+  for (const bx of [x + 90, x + 150]) {
+    ctx.fillStyle = '#2a2d30'; rr(ctx, bx - 3, y + 6, 6, 2, 0.6); ctx.fill();
+    ctx.fillStyle = breach ? '#ff5a3a' : o > 0.02 ? '#ffc23a' : '#8a6a2a'; ctx.beginPath(); ctx.arc(bx, y + 9, 2, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.beginPath(); ctx.arc(bx - 0.6, y + 8.2, 0.6, 0, 7); ctx.fill();
+  }
+  if (breach && Math.random() < 0.12) sparks(cx - 30 + rf(-2, 2), cy + rf(-20, 20), '#ffc24a', 3);
+  // прочность двери
+  const mx = DOOR_HP[r.l - 1];
+  if (r.hp < mx) {
+    const bx = x + 8, by = y - 8, w = 64, n = 12, k = clamp(r.hp / mx, 0, 1);
+    ctx.fillStyle = 'rgba(6,8,7,.85)'; rr(ctx, bx - 1.5, by - 1.5, w + 3, 5.4, 2.2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 0.4; rr(ctx, bx - 1.5, by - 1.5, w + 3, 5.4, 2.2); ctx.stroke();
+    const col = k > 0.35 ? '#ffc24a' : '#ff4a3a';
+    for (let i = 0; i < n; i++) { ctx.fillStyle = (i + 0.5) / n <= k ? col : 'rgba(255,255,255,.08)'; ctx.fillRect(bx + i * (w / n) + 0.3, by, w / n - 0.8, 2.4); }
   }
 }
 // ===== Лифты =====
@@ -462,7 +488,7 @@ function drawBadge(x, y, what, col) {
   ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.2; ctx.stroke();
   ctx.fillStyle = '#1a1510';
   if (what === '!') { ctx.font = `700 14px ${FONT_D}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', 0, 1); }
-  else { ctx.save(); ctx.translate(-7, -7); ctx.scale(14 / 24, 14 / 24); ctx.fill(icoPath(what), 'evenodd'); ctx.restore(); }
+  else { ctx.save(); ctx.translate(-7, -7); ctx.scale(14 / 24, 14 / 24); ctx.fill(icoPath(what)); ctx.restore(); }
   ctx.restore();
 }
 function drawGrave(x, y) {
@@ -511,7 +537,7 @@ function drawBubbles(t) {
     const bg = ctx.createRadialGradient(-5, -6, 2, 0, 0, 15); bg.addColorStop(0, '#ffffff'); bg.addColorStop(1, '#d8d2c0');
     ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(0, 0, 14.5, 0, 7); ctx.fill();
     ctx.lineWidth = 2.6; ctx.strokeStyle = col; ctx.stroke();
-    ctx.save(); ctx.translate(-9.5, -9.5); ctx.scale(19 / 24, 19 / 24); ctx.fillStyle = shade(col, -0.25); ctx.fill(icoPath(icon), 'evenodd'); ctx.restore();
+    ctx.save(); ctx.translate(-9.5, -9.5); ctx.scale(19 / 24, 19 / 24); ctx.fillStyle = shade(col, -0.25); ctx.fill(icoPath(icon)); ctx.restore();
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(-4, -8, 6, 2.4, -0.5, 0, 7); ctx.fill();
     ctx.restore();
   }
@@ -576,7 +602,7 @@ function drawFx(t) {
     ctx.font = `700 15px ${FONT_D}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     const tw = ctx.measureText(f.text).width + (f.icon ? 18 : 0);
     ctx.translate(-tw / 2, 0);
-    if (f.icon) { ctx.save(); ctx.translate(0, -8); ctx.scale(15 / 24, 15 / 24); ctx.fillStyle = f.col; ctx.strokeStyle = 'rgba(10,8,6,.85)'; ctx.lineWidth = 4; ctx.stroke(icoPath(f.icon)); ctx.fill(icoPath(f.icon), 'evenodd'); ctx.restore(); }
+    if (f.icon) { ctx.save(); ctx.translate(0, -8); ctx.scale(15 / 24, 15 / 24); ctx.fillStyle = f.col; ctx.strokeStyle = 'rgba(10,8,6,.85)'; ctx.lineWidth = 4; ctx.stroke(icoPath(f.icon)); ctx.fill(icoPath(f.icon)); ctx.restore(); }
     ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(10,8,6,.85)'; ctx.strokeText(f.text, f.icon ? 18 : 0, 0);
     ctx.fillStyle = f.col; ctx.fillText(f.text, f.icon ? 18 : 0, 0);
     ctx.restore();
@@ -587,17 +613,40 @@ function drawFx(t) {
 
 // Портрет жителя для карточки
 function drawPortrait(canvas, d) {
+  // живой портрет: персонаж дышит и моргает, пока карточка открыта
+  canvas._d = d;
+  if (canvas._loop) return;
+  canvas._loop = true;
+  const tick = () => {
+    if (!canvas.isConnected) { canvas._loop = false; return; }
+    paintPortrait(canvas, canvas._d);
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+function paintPortrait(canvas, d) {
   const g = canvas.getContext('2d');
   const dpr = Math.min(2.5, window.devicePixelRatio || 1);
   const w = canvas.clientWidth || 104, h = canvas.clientHeight || 128;
-  canvas.width = w * dpr; canvas.height = h * dpr;
+  if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
-  g.clearRect(0, 0, w, h);
-  const bg = g.createRadialGradient(w / 2, h * 0.45, 4, w / 2, h * 0.5, h * 0.7);
-  bg.addColorStop(0, '#2c4a35'); bg.addColorStop(1, '#07120b');
+  const t = performance.now() / 1000;
+  // фон: стена убежища, прожектор сверху
+  const bg = g.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, '#26343a'); bg.addColorStop(0.72, '#18232a'); bg.addColorStop(0.73, '#2a2622'); bg.addColorStop(1, '#141210');
   g.fillStyle = bg; g.fillRect(0, 0, w, h);
-  if (d.pet) { const T = PET_TYPES.find(p => p.id === d.pet.type); if (T && T.k !== 'bird') drawPet(g, d.pet, w * 0.2, h - 12, 1, false, performance.now() / 1000, 2.2); }
-  const P = dwellerParams(d, w / 2 + 4, h - 10, performance.now() / 1000, 'idle', 2.3);
+  g.fillStyle = 'rgba(255,255,255,.05)'; for (let y = 14; y < h * 0.72; y += 18) g.fillRect(0, y, w, 1);
+  g.fillStyle = 'rgba(0,0,0,.25)'; for (let y = 15; y < h * 0.72; y += 18) g.fillRect(0, y, w, 1);
+  g.globalCompositeOperation = 'lighter';
+  const sp = g.createRadialGradient(w / 2, -10, 4, w / 2, h * 0.4, h * 0.75);
+  sp.addColorStop(0, 'rgba(255,226,170,.42)'); sp.addColorStop(1, 'rgba(255,226,170,0)');
+  g.fillStyle = sp; g.fillRect(0, 0, w, h);
+  g.globalCompositeOperation = 'source-over';
+  if (d.pet) { const T = PET_TYPES.find(p => p.id === d.pet.type); if (T && T.k !== 'bird') drawPet(g, d.pet, w * 0.2, h - 10, 1, false, t, 2.0); }
+  const P = dwellerParams(d, w / 2 + 2, h - 9, t, 'idle', 2.25);
   P.face = 1;
   drawHuman(g, P);
+  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, h * 0.8);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)');
+  g.fillStyle = vg; g.fillRect(0, 0, w, h);
 }
