@@ -66,7 +66,7 @@ function modal(html, cls) {
   else m.innerHTML = `<div class="term modal-card ${cls || ''}"><div class="term-scr">${html}</div></div>`;
   m.hidden = false;
 }
-function closeModal() { $('#modal').hidden = true; $('#modal').innerHTML = ''; }
+function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; m.classList.remove('ev'); }
 function confirmBox(text, yes, onYes, danger) {
   R.confirmCb = onYes;
   modal(`<p class="confirm-t">${text}</p><div class="t-row-btns"><button class="t-btn" data-a="modalClose">Отмена</button><button class="t-btn ${danger ? 'danger' : 'pri'}" data-a="confirmYes">${yes}</button></div>`);
@@ -189,6 +189,8 @@ function updateHud() {
   const dead = S.dwellers.filter(d => d.st === 'dead').length;
   if (dead) chips.push(railBtn('deadList', 'bad', 'skull', 'Погибшие', dead));
   if (S.lunch > 0) chips.push(railBtn('lunch', 'lunch', 'box', 'Ящик', S.lunch));
+  if (S.event) { const e = eventDef(); if (e) chips.push(railBtn('eventOpen', 'warn wide pulse', e.icon, 'Сообщение')); }
+  if (S.trader) chips.push(railBtn('trader', 'good wide', 'bag', 'Торговец'));
   const html = chips.join('');
   const box = $('#rail');
   if (box._h !== html) { box._h = html; box.innerHTML = html; }
@@ -215,6 +217,9 @@ function roomView(id) {
       if (r.t === 'door') return doorHtml(r);
       const def = ROOMS[r.t];
       let h = `<div class="hdr"><div><div class="lvl">Уровень ${r.l} ${pips(r.l)}${r.s > 1 ? ` · ${r.s === 2 ? 'двойная' : 'тройная'}` : ''}</div><p>${def.desc}</p></div>${def.st >= 0 ? `<div class="need"><em>${STAT_ABBR[def.st]}</em><small>${STAT_NAMES[def.st]}</small></div>` : ''}</div>`;
+      const syn = synergy(r);
+      if (syn.list.length) h += `<div class="syn">${svg('star')}<span>${syn.list.map(x => `<b>${esc(x.name)}</b> +${Math.round(x.v * 100)}%`).join(' · ')}</span></div>`;
+      else { const hint = SYNERGY.find(([a, b]) => a === r.t || b === r.t); if (hint) h += `<div class="syn off">${svg('star')}<span>Поставьте рядом «${esc(ROOMS[hint[0] === r.t ? hint[1] : hint[0]].n)}» — бонус +${Math.round(hint[2] * 100)}%</span></div>`; }
       const inc = incAt(r.id);
       if (inc) h += `<div class="banner bad">${svg('alert')}<span><b>${ENEMY[inc.k].n}!</b> ${inc.k === 'fire' ? 'Жители тушат пожар.' : 'Жители сражаются.'} Отправьте сюда сильных и вооружённых.</span></div>`;
       if (r.off) h += `<div class="banner warn">${svg('power')}<span>Нет энергии — комната обесточена. Соберите энергию или постройте Электростанцию.</span></div>`;
@@ -272,7 +277,7 @@ function roomView(id) {
 }
 function doorHtml(r) {
   let h = `<div class="hdr"><div><div class="lvl">Уровень ${r.l} ${pips(r.l)}</div><p>Первая линия обороны. Охрана с оружием отбивает набеги ещё у двери.</p></div></div>`;
-  h += `<div class="status col"><div class="row-sp"><span>Прочность двери</span><span class="mono">${fmt(r.hp)}/${fmt(DOOR_HP[r.l - 1])}</span></div>${bar(r.hp / DOOR_HP[r.l - 1])}</div>`;
+  h += `<div class="status col"><div class="row-sp"><span>Прочность двери</span><span class="mono">${fmt(r.hp)}/${fmt(doorMaxHp(r))}</span></div>${bar(r.hp / doorMaxHp(r))}</div>`;
   const inc = incAt(r.id);
   if (inc) h += `<div class="banner bad">${svg('alert')}<span><b>${ENEMY[inc.k].n}</b> у двери!</span></div>`;
   h += `<h3 class="t-h">Охрана ${r.w.length}/2</h3><div class="slots">`;
@@ -319,8 +324,9 @@ function dwellerView(id) {
       const need = xpNeed(d.lvl);
       let h = `<div class="dw-head"><canvas class="portrait" id="portrait"></canvas><div class="dw-info">
         <div class="lvl">${d.rar ? rarTag(d.rar) : ''} Уровень ${d.lvl}${d.child ? ' · ребёнок' : ''}</div>
+        ${traitChips(d)}
         <div class="kv"><span>Опыт</span>${bar(d.xp / need)}<small class="mono">${fmt(d.xp)}/${fmt(need)}</small></div>
-        <div class="kv"><span>Здоровье</span>${hpBar(d)}<small class="mono">${Math.ceil(d.hp)}/${Math.round(d.mhp)}</small></div>
+        <div class="kv"><span>Здоровье</span>${hpBar(d)}<small class="mono">${Math.ceil(d.hp)}/${Math.round(maxHp(d))}</small></div>
         <div class="kv"><span>Радиация</span>${bar(d.rad / d.mhp, '#ff5f4a')}<small class="mono">${Math.round(d.rad)}</small></div>
         <div class="kv"><span>Счастье</span>${bar(d.hap / 100, '#ffc24a')}<small class="mono">${Math.round(d.hap)}%</small></div>
         <div class="muted small">${esc(locText(d))}${d.preg ? ` · беременна (${fmtTime(d.preg)})` : ''}</div>
@@ -702,7 +708,7 @@ function arrivalsView() {
       const full = popCount() >= popCap();
       let h = full ? `<div class="banner warn">${svg('alert')}<span>Мест нет (${popCount()}/${popCap()}). Постройте или улучшите Жилые помещения.</span></div>` : '';
       h += `<p class="t-p">Выжившие просятся внутрь. Впустите — или прогоните.</p>`;
-      h += S.arrivals.map(d => `<div class="card"><div class="row-sp">${av(d)}<span class="grow"><b class="${rarCls(d.rar)}">${esc(fullName(d))}</b><small>${d.rar ? RAR[d.rar] + ' · ' : ''}Ур. ${d.lvl}${d.weapon ? ' · ' + esc(itemName(d.weapon)) : ''}</small></span></div>${spList(d, bestStat(d))}<div class="t-row-btns"><button class="t-btn small danger" data-a="reject" data-id="${d.id}">Прогнать</button><button class="t-btn small pri" data-a="accept" data-id="${d.id}" ${full ? 'disabled' : ''}>Впустить</button></div></div>`).join('');
+      h += S.arrivals.map(d => `<div class="card"><div class="row-sp">${av(d)}<span class="grow"><b class="${rarCls(d.rar)}">${esc(fullName(d))}</b><small>${d.rar ? RAR[d.rar] + ' · ' : ''}Ур. ${d.lvl}${d.weapon ? ' · ' + esc(itemName(d.weapon)) : ''}</small>${traitChips(d, true)}</span></div>${spList(d, bestStat(d))}<div class="t-row-btns"><button class="t-btn small danger" data-a="reject" data-id="${d.id}">Прогнать</button><button class="t-btn small pri" data-a="accept" data-id="${d.id}" ${full ? 'disabled' : ''}>Впустить</button></div></div>`).join('');
       if (S.arrivals.length > 1) h += `<button class="t-btn pri wide" data-a="acceptAll" ${full ? 'disabled' : ''}>Впустить всех</button>`;
       return h;
     },
@@ -723,6 +729,7 @@ function menuView() {
     render() {
       return `<div class="t-row-btns col">
         <button class="t-btn pri" data-a="close">Продолжить</button>
+        <button class="t-btn" data-a="research">${svg('robot')} Исследования${S.research && S.research.cur ? ` <small>· идёт: ${esc(RESEARCH[S.research.cur][0])}</small>` : ''}</button>
         <button class="t-btn" data-a="objectives">${svg('list')} Цели и ящики</button>
         <button class="t-btn" data-a="sound">${svg(Snd.on ? 'sound' : 'mute')} Звук: ${Snd.on ? 'вкл' : 'выкл'}</button>
         <button class="t-btn" data-a="saveNow">Сохранить</button>

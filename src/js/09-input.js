@@ -113,6 +113,8 @@ function onTap(sx, sy) {
     const p = bubblePos(r);
     if (Math.hypot(w.x - p.x, w.y - p.y) < 20 * bs) { collectRoom(r); return; }
   }
+  // торговец у дороги
+  if (S.trader && Math.abs(w.x - TRADER_X) < 34 && w.y > GROUND_Y - 60 && w.y < GROUND_Y + 12) { ACT.trader(); return; }
   // улица: прибывшие и вернувшиеся
   const gy = GROUND_Y;
   if (w.x < PORTAL.x1 && w.y > gy - 70 && w.y < gy + 12) {

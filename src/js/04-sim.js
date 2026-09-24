@@ -79,7 +79,7 @@ function upgradeRoom(r) {
   if (S.res.caps < cost) { toast('Не хватает крышек', 'bad'); Snd.bad(); return; }
   S.res.caps -= cost;
   r.l++;
-  if (r.t === 'door') r.hp = DOOR_HP[r.l - 1];
+  if (r.t === 'door') r.hp = doorMaxHp(r);
   objProg('upgrade', 1);
   Snd.build();
   sparks(roomX(r) + roomW(r) * CW / 2, roomY(r) + FH / 2, '#7dff95', 40);
@@ -258,7 +258,7 @@ function sumStat(r) {
   const def = ROOMS[r.t];
   if (!def || def.st < 0) return 0;
   let s = 0;
-  for (const id of r.w) { const d = D(id); if (arrived(d)) s += stat(d, def.st) * (1 + petBonus(d, 'prod')); }
+  for (const id of r.w) { const d = D(id); if (arrived(d)) s += stat(d, def.st) * (1 + petBonus(d, 'prod')) * workMult(d); }
   return s;
 }
 function hapMult(r) {
@@ -272,7 +272,7 @@ function cycleTime(r) {
   const def = ROOMS[r.t];
   const ss = sumStat(r);
   if (!ss) return Infinity;
-  return (def.time * r.s) / (0.3 * r.s + 0.12 * ss) / hapMult(r);
+  return (def.time * r.s) / (0.3 * r.s + 0.12 * ss) / hapMult(r) / prodMult(r);
 }
 function roomOutput(r) { const def = ROOMS[r.t]; return Math.max(1, Math.round(def.out[r.l - 1] * SIZE_MULT[r.s - 1])); }
 function luckAvg(r) {
@@ -348,6 +348,7 @@ function collectRoom(r, auto) {
   let lucky = false;
   if (def.res === 'stim' || def.res === 'rad') caps = 2 * amt;
   if (rnd() < L * 0.015) { caps += amt; lucky = true; }
+  if (workersOf(r).some(d => hasTr(d, 'lucky')) && rnd() < 0.12) { got += def.res === 'cola' ? addRes('food', amt) + addRes('water', amt) : addRes(def.res, amt); lucky = true; }
   addCaps(caps);
   if (def.res === 'cola') { objProg('c_food', amt); objProg('c_water', amt); } else objProg('c_' + def.res, got);
   if (!R.offline) {
@@ -428,11 +429,12 @@ function sim(dt) {
 function consume(dt) {
   let p = 0;
   for (const r of S.rooms) if (consumes(r) && !r.off) p += powerUse(r);
+  if (rsDone('wiring')) p *= 0.9;
   S.res.power = Math.max(0, S.res.power - p * dt);
   let eaters = 0;
-  for (const d of S.dwellers) if (d.st === 'vault') eaters += d.child ? 0.5 : 1;
-  S.res.food = Math.max(0, S.res.food - eaters * 0.03 * dt);
-  S.res.water = Math.max(0, S.res.water - eaters * 0.03 * dt);
+  for (const d of S.dwellers) if (d.st === 'vault') eaters += (d.child ? 0.5 : 1) * (hasTr(d, 'glutton') ? 1.5 : hasTr(d, 'ascetic') ? 0.6 : 1);
+  S.res.food = Math.max(0, S.res.food - eaters * 0.025 * dt);
+  S.res.water = Math.max(0, S.res.water - eaters * 0.025 * dt);
 }
 function updateRoom(r, dt) {
   const def = ROOMS[r.t];
@@ -450,7 +452,7 @@ function updateRoom(r, dt) {
     for (const id of r.w) {
       const d = D(id);
       if (!arrived(d) || d.sp[def.st] >= 10) continue;
-      d.tp += (dt * mult * (1 + petBonus(d, 'train'))) / trainTime(d.sp[def.st]);
+      d.tp += (dt * mult * (1 + petBonus(d, 'train')) * (hasTr(d, 'genius') ? 1.3 : 1)) / trainTime(d.sp[def.st]);
       if (d.tp >= 1) trainUp(d, def.st);
     }
   } else if (def.kind === 'craft' && r.craft && !r.done) {
@@ -458,7 +460,7 @@ function updateRoom(r, dt) {
     if (!ss) return;
     let pb = 0;
     for (const id of r.w) pb += petBonus(D(id), 'craft');
-    r.craft.p += (dt * (0.4 + 0.12 * ss) * (1 + pb)) / r.craft.T;
+    r.craft.p += (dt * (0.4 + 0.12 * ss) * (1 + pb) * synergy(r).m) / r.craft.T;
     if (r.craft.p >= 1) {
       r.done = newItem(r.craft.k, r.craft.id);
       r.craft = null;
@@ -531,7 +533,7 @@ function updateDweller(d, dt) {
   if (S.res.water <= 0) d.rad = Math.max(d.rad, Math.min(d.mhp * 0.5, d.rad + 0.08 * dt));
   if (d.hp > effMax(d)) d.hp = effMax(d);
   if (d.preg > 0) { d.preg -= dt; if (d.preg <= 0) { d.preg = 0; giveBirth(d); } }
-  if (d.child > 0) { d.child -= dt; if (d.child <= 0) { d.child = 0; growUp(d); } }
+  if (d.child > 0) { d.child -= dt * (rsDone('genetics') ? 1.5 : 1); if (d.child <= 0) { d.child = 0; growUp(d); } }
   if (d.path && d.path.length) {
     if (R.offline) { const l = d.path[d.path.length - 1]; d.x = l.x; d.fy = l.f; d.path = null; d.inElev = false; }
     else { followPath(d, dt); return; }
@@ -647,7 +649,7 @@ function tryPairing(r) {
   const ms = ws.filter(d => d.g === 'm'), fs = ws.filter(d => d.g === 'f');
   for (const m of ms) for (const f of fs) {
     if (related(m, f)) continue;
-    const ch = 0.06 * (1 + (stat(m, 3) + stat(f, 3)) * 0.05);
+    const ch = 0.06 * (1 + (stat(m, 3) + stat(f, 3)) * 0.05) * (hasTr(m, 'charmer') || hasTr(f, 'charmer') ? 1.6 : 1);
     if (rnd() < ch) { r.pair = { m: m.id, f: f.id, ph: 0, t: 0 }; return; }
   }
 }
@@ -657,7 +659,7 @@ function useStim(d) {
   if (S.res.stim < 1) { toast('Нет аптечек — постройте Медпункт', 'bad'); return; }
   if (d.hp >= effMax(d) - 0.5) { toast('Житель полностью здоров'); return; }
   S.res.stim--;
-  d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')));
+  d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')) * (rsDone('fieldmed') ? 1.5 : 1));
   objProg('heal', 1);
   Snd.collect();
   const p = dwellerWorldPos(d); if (p) sparks(p.x, p.y - 26, '#ff6a5a', 12);
@@ -752,7 +754,8 @@ function makeEnemies(k, r, n, outside) {
   const e = ENEMY[k], th = threat();
   const w = roomW(r) * CW;
   const arr = [];
-  for (let i = 0; i < n; i++) arr.push({ hp: e.hp * th, m: e.hp * th, x: outside ? PORTAL.x0 - rf(10, 110) : rf(16, w - 16), ph: rnd() * 6, tg: i, face: -1 });
+  const hk = rsDone('alarm') ? 0.8 : 1;
+  for (let i = 0; i < n; i++) arr.push({ hp: e.hp * th * hk, m: e.hp * th * hk, x: outside ? PORTAL.x0 - rf(10, 110) : rf(16, w - 16), ph: rnd() * 6, tg: i, face: -1 });
   return arr;
 }
 function startIncident(k, r, silent, gen) {
@@ -784,7 +787,7 @@ function defenders(r) {
 function hurt(d, dmg, rad) {
   const red = 1 - clamp(stat(d, 2), 0, 17) * 0.025;
   d.hp -= dmg * red;
-  if (rad) d.rad = Math.min(d.mhp - 1, d.rad + rad);
+  if (rad) d.rad = Math.min(d.mhp - 1, d.rad + rad * (hasTr(d, 'radres') ? 0.5 : 1));
   if (d.hp > effMax(d)) d.hp = effMax(d);
   d.hurt = 0.25;
   if (d.hp <= 0) dieDweller(d, 'vault');
@@ -806,7 +809,7 @@ function updateIncidents(dt) {
     for (const d of defs) {
       if (!alive.length) break;
       const tgt = alive[d.id % alive.length];
-      const dmg = inc.k === 'fire' ? (1.5 + 0.05 * d.lvl + stat(d, 2) * 0.05) : dwellerDps(d);
+      const dmg = inc.k === 'fire' ? (1.5 + 0.05 * d.lvl + stat(d, 2) * 0.05) * (hasTr(d, 'firefly') ? 2 : 1) : dwellerDps(d);
       tgt.hp -= dmg * dt;
       d.fight = 0.3;
       d.fireCd = (d.fireCd || 0) - dt;
@@ -834,6 +837,12 @@ function updateIncidents(dt) {
       for (let j = alive.length - 1; j >= 0; j--) if (alive[j].hp <= 0) alive.splice(j, 1);
     }
     // враги атакуют
+    if (breach && rsDone('turret') && alive.length) {
+      const tg = alive[Math.floor(inc.t * 2) % alive.length];
+      tg.hp -= 7 * dt;
+      if (!R.offline && rnd() < dt * 6) { tracer(roomX(r) + 8, roomY(r) + 16, tg.x + rf(-3, 3), roomY(r) + FEET - 20, '#ffe08a'); Snd.shot(); }
+      if (tg.hp <= 0) { S.stats.kills++; objProg('kill', 1); alive.splice(alive.indexOf(tg), 1); }
+    }
     if (breach) {
       let dps = 0;
       for (const x of alive) dps += e.dps * dpsMul;
@@ -858,7 +867,7 @@ function updateIncidents(dt) {
       addCaps(reward);
       if (inc.k === 'fire') objProg('fire', 1);
       for (const d of defs) gainXp(d, 15);
-      if (inc.ext) door().hp = DOOR_HP[door().l - 1];
+      if (inc.ext) door().hp = doorMaxHp(door());
       if (!R.offline) {
         if (reward) {
           toast(`${e.n} — угроза устранена! +${reward} крышек`, 'good');
@@ -886,7 +895,7 @@ function updateIncidents(dt) {
         }
         if (!next) {
           S.incs.splice(i, 1);
-          door().hp = DOOR_HP[door().l - 1];
+          door().hp = doorMaxHp(door());
           if (!R.offline) toast(`${e.n} ушли${inc.stolen ? `, украв ${inc.stolen} крышек` : ''}`, 'warn');
           continue;
         }
@@ -957,7 +966,7 @@ function exLog(d, msg) {
 function packCap(d) { return 8 + stat(d, 0) * 2; }
 function recallExplorer(d) {
   if (d.st !== 'explore' || d.ex.back >= 0) return;
-  d.ex.back = d.ex.t / 2 / (1 + petBonus(d, 'wret') * 3);
+  d.ex.back = d.ex.t / 2 / (1 + petBonus(d, 'wret') * 3) * (hasTr(d, 'sprinter') ? 0.7 : 1);
   d.ex.backT = d.ex.back;
   exLog(d, 'Возвращаюсь домой.');
 }
@@ -975,13 +984,13 @@ function updateExplorer(d, dt) {
     return;
   }
   ex.t += dt;
-  d.rad = Math.min(d.mhp - 1, d.rad + dt * 0.03 * (1 - clamp(stat(d, 2), 0, 15) * 0.05));
+  d.rad = Math.min(d.mhp - 1, d.rad + dt * 0.03 * (1 - clamp(stat(d, 2), 0, 15) * 0.05) * (hasTr(d, 'radres') ? 0.5 : 1));
   if (d.hp > effMax(d)) d.hp = effMax(d);
   ex.nev -= dt;
   if (ex.nev <= 0) { ex.nev = rf(10, 17); wasteEvent(d); }
   if (d.st !== 'explore') return;
   if (d.hp < effMax(d) * 0.45 && ex.stim > 0) {
-    ex.stim--; d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')));
+    ex.stim--; d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')) * (rsDone('fieldmed') ? 1.5 : 1));
     exLog(d, 'Использовал(а) аптечку.');
   }
   if (d.rad > d.mhp * 0.35 && ex.radw > 0) {
@@ -994,16 +1003,16 @@ function wasteEvent(d) {
   const lv = 1 + ex.t / 120;
   const L = stat(d, 6), P = stat(d, 1), C = stat(d, 3), I = stat(d, 4);
   const place = pick(WASTE_PLACES);
-  const kind = weighted([['caps', 26 + L], ['junk', 16 + P], ['item', 9 + P * 0.6 + L * 0.4], ['fight', 15 + lv * 1.2], ['friend', 6 + C], ['loc', 8 + I], ['none', 8]]);
+  const kind = weighted([['caps', 26 + L], ['junk', 16 + P], ['item', (9 + P * 0.6 + L * 0.4) * (hasTr(d, 'scav') ? 1.35 : 1)], ['fight', 15 + lv * 1.2], ['friend', 6 + C], ['loc', 8 + I], ['none', 8]]);
   if (kind === 'caps') {
-    const n = Math.round(ri(3, 12) * (1 + L * 0.08) * (1 + ex.t / 400) * (1 + petBonus(d, 'wcaps')));
+    const n = Math.round(ri(3, 12) * (1 + L * 0.08) * (1 + ex.t / 400) * (1 + petBonus(d, 'wcaps')) * (hasTr(d, 'lucky') ? 1.2 : 1) * (rsDone('survey') ? 1.25 : 1));
     ex.caps += n;
     exLog(d, `Нашёл(ла) ${n} крышек ${place}.`);
   } else if (kind === 'junk') {
     const rar = rnd() < 0.02 + L * 0.004 ? 3 : rnd() < 0.08 + L * 0.01 ? 2 : rnd() < 0.3 ? 1 : 0;
     const ids = Object.keys(JUNK).filter(j => JUNK[j][1] === rar);
     const j = pick(ids);
-    const n = ri(1, 2);
+    const n = Math.ceil(ri(1, 2) * (hasTr(d, 'scav') ? 1.5 : 1) * (rsDone('survey') ? 1.25 : 1));
     ex.junk[j] = (ex.junk[j] || 0) + n;
     exLog(d, `Подобрал(а) хлам: ${JUNK[j][0]} ×${n} ${place}.`);
   } else if (kind === 'item') {
@@ -1304,7 +1313,7 @@ function slowTick() {
         if (def && def.st >= 0) { const v = stat(d, def.st), b = stat(d, bestStat(d)); t += 10 + 25 * (v / Math.max(1, b)); if (def.kind === 'train') t += 5; }
         else if (r.t === 'door') t += 20;
         if (r.off) t -= 15;
-        if (incAt(r.id)) t -= 10;
+        if (incAt(r.id) && !hasTr(d, 'brave')) t -= 10;
       }
       if (d.preg) t += 10;
       if (d.pet) t += 5;
@@ -1313,10 +1322,11 @@ function slowTick() {
     if (S.res.water <= 0) t -= 25;
     if (d.hp < effMax(d) * 0.5) t -= 10;
     if (d.rad > d.mhp * 0.3) t -= 10;
-    t = clamp(t + radio, 5, 100);
+    t = clamp(t + radio + hapTraitAdd(d), 5, 100);
     d.hap += (t - d.hap) * 0.012;
   }
   for (const r of S.rooms) if (r.t === 'living') tryPairing(r);
+  mechTick();
   const pop = popCount();
   S.timers.arrive -= 1;
   if (S.timers.arrive <= 0) {

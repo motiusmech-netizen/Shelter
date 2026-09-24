@@ -533,6 +533,66 @@ input { font: 600 17px var(--fb); padding: 10px 12px; border-radius: 5px; border
 .lb-btns { display: flex; gap: 10px; width: 100%; }
 .lb-btns .t-btn { flex: 1; justify-content: center; }
 
+
+/* ===== черты характера ===== */
+.traits { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
+.trait { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 6px; border-radius: 10px; font: 600 11.5px/1.25 var(--fb); letter-spacing: .02em; color: var(--tc); background: rgba(0,0,0,.35); border: 1px solid color-mix(in srgb, var(--tc) 55%, transparent); text-shadow: 0 0 6px color-mix(in srgb, var(--tc) 40%, transparent); }
+.trait::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--tc); box-shadow: 0 0 5px var(--tc); }
+.trait.bad::before { border-radius: 1px; transform: rotate(45deg); }
+.traits.sm .trait { font-size: 10.5px; padding: 1px 6px 1px 5px; }
+/* ===== соседство комнат ===== */
+.syn { margin-top: 8px; display: flex; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: #ffe39a; background: linear-gradient(90deg, rgba(255,200,80,.14), rgba(255,200,80,.02)); border: 1px solid rgba(255,200,80,.35); text-shadow: 0 0 6px rgba(255,190,60,.35); }
+.syn .ic { width: 18px; height: 18px; color: #ffd24a; }
+.syn b { color: #fff0c0; font-weight: 600; }
+.syn.off { color: var(--ph-dim); background: none; border-style: dashed; border-color: var(--ph-line); text-shadow: none; }
+.syn.off .ic { color: var(--ph-dim); }
+/* ===== исследования ===== */
+.rs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.rs { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 124px; padding: 10px 10px 8px; text-align: left; border-radius: 8px;
+  border: 1px solid rgba(157,255,178,.4); background: linear-gradient(160deg, rgba(157,255,178,.1), rgba(157,255,178,.02)); box-shadow: inset 0 1px 0 rgba(190,255,205,.15), 0 2px 0 rgba(0,0,0,.45); color: var(--ph); }
+.rs-ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, #3a7a4a, #0f2a17); box-shadow: 0 0 0 1.5px rgba(157,255,178,.5), 0 0 12px rgba(120,255,150,.25); margin-bottom: 3px; }
+.rs-ic .ic { width: 19px; height: 19px; color: var(--ph-hi); }
+.rs b { font: 600 14.5px/1.1 var(--fd); letter-spacing: .03em; color: var(--ph-hi); }
+.rs small { font: 400 12px/1.3 var(--fb); color: var(--ph-dim); flex: 1; }
+.rs em { font: 600 12.5px var(--fd); font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); display: inline-flex; align-items: center; gap: 4px; }
+.rs em .ic { width: 14px; height: 14px; }
+.rs:active:not([disabled]) { background: rgba(157,255,178,.2); }
+.rs[disabled] { cursor: default; }
+.rs.done { border-color: #8dffa4; background: linear-gradient(160deg, rgba(141,255,164,.24), rgba(141,255,164,.05)); }
+.rs.done em { color: var(--ph-hi); }
+.rs.done .rs-ic { background: radial-gradient(circle at 50% 30%, #9dffb2, #2a9a4a); } .rs.done .rs-ic .ic { color: #04200d; }
+.rs.cur { border-color: var(--amber); box-shadow: 0 0 16px rgba(255,194,74,.35), inset 0 1px 0 rgba(255,236,180,.2); }
+.rs.lock { opacity: .45; filter: grayscale(.6); }
+.rs-cur { border-style: solid; border-color: rgba(255,194,74,.6); }
+/* ===== карточка события ===== */
+#modal.ev { background: rgba(2,6,3,.72); }
+.ev-card { width: min(380px, calc(100vw - 28px)); border-radius: 18px; overflow: hidden; background: var(--grain), linear-gradient(180deg, #2e322b, #161812); box-shadow: 0 24px 60px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.18), 0 0 0 1px #070806, 0 0 0 4px rgba(214,166,70,.45); animation: evin .45s cubic-bezier(.2,.9,.3,1.25); }
+@keyframes evin { from { transform: translateY(30px) scale(.9); opacity: 0; } }
+.ev-art { position: relative; height: 112px; display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--ec) 55%, transparent) 0%, transparent 62%), repeating-conic-gradient(from 0deg at 50% 60%, rgba(255,255,255,.07) 0 6deg, transparent 6deg 18deg), linear-gradient(180deg, #1c211a, #0c0f0a); }
+.ev-art::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--brass); }
+.ev-medal { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; position: relative;
+  background: radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--ec) 45%, #fff), var(--ec) 60%, color-mix(in srgb, var(--ec) 55%, #000));
+  box-shadow: 0 0 0 4px #efe6cc, 0 0 0 6px #1a1408, 0 8px 18px rgba(0,0,0,.6), 0 0 40px color-mix(in srgb, var(--ec) 70%, transparent); animation: medal 2.4s ease-in-out infinite; }
+.ev-medal::after { content: ""; position: absolute; left: 14%; right: 14%; top: 6%; height: 42%; border-radius: 50%; background: linear-gradient(rgba(255,255,255,.6), rgba(255,255,255,0)); }
+.ev-medal .ic { width: 40px; height: 40px; color: #fff; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+@keyframes medal { 50% { transform: translateY(-4px) rotate(-3deg); } }
+.ev-timer { position: absolute; right: 12px; top: 10px; font: 600 12px var(--fd); font-style: normal; letter-spacing: .08em; color: #ffd28a; padding: 3px 8px; border-radius: 10px; background: rgba(0,0,0,.5); }
+.ev-body { padding: 14px 16px 16px; color: #efe6cc; }
+.ev-body > small { font: 600 10.5px var(--fm); letter-spacing: .22em; color: #c8a050; }
+.ev-body h2 { margin: 4px 0 8px; font: 700 24px/1.05 var(--fd); letter-spacing: .03em; text-transform: uppercase; color: #fff4d8; }
+.ev-body p { margin: 0 0 12px; font: 400 15px/1.45 var(--fb); color: #e2d8bc; }
+.ev-body .t-btn { background: rgba(255,255,255,.06); border-color: rgba(255,236,190,.45); color: #fff0d0; text-shadow: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 0 rgba(0,0,0,.5); }
+.ev-body .t-btn::before, .ev-body .t-btn::after { border-color: #ffe39a; }
+.ev-body .t-btn.pri { background: linear-gradient(180deg, #ffe9a6, #f0b22e 55%, #c07a10); color: #2a1604; border-color: #fff0c0; box-shadow: 0 0 16px rgba(255,180,50,.4), inset 0 1px 0 rgba(255,255,255,.7), 0 2px 0 rgba(0,0,0,.5); }
+.ev-body .t-btn.pri::before, .ev-body .t-btn.pri::after { border-color: #2a1604; }
+.ev-body .t-btn small { color: inherit; opacity: .8; }
+.ev-later { display: block; margin: 10px auto 0; color: #c8a050; }
+/* ===== торговец ===== */
+.trader-hd { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.tr-portrait { width: 84px; height: 96px; flex: none; border-radius: 8px; border: 1px solid var(--ph-line); box-shadow: inset 0 0 18px rgba(0,0,0,.7); }
+.seg button.on { background: var(--ph); color: #031a0a; text-shadow: none; }
+
 @media (max-width: 400px) {
   .chip { padding: 0 7px 0 3px; gap: 3px; }
   .nix b { font-size: 15px; }
@@ -1209,11 +1269,12 @@ function statBonus(d, i) { return d.outfit ? OUTFITS[d.outfit.id][1][i] : 0; }
 function stat(d, i) { return d.sp[i] + statBonus(d, i); }
 function bestStat(d) { let b = 0; for (let i = 1; i < 7; i++) if (stat(d, i) > stat(d, b)) b = i; return b; }
 function xpNeed(l) { return Math.floor(40 + 30 * Math.pow(l, 1.4)); }
-function effMax(d) { return Math.max(1, d.mhp - d.rad); }
+function maxHp(d) { return d.mhp * (hasTr(d, 'tough') ? 1.2 : 1); }
+function effMax(d) { return Math.max(1, maxHp(d) - d.rad); }
 function isAdult(d) { return !d.child; }
 function fullName(d) { return d.name + ' ' + (d.g === 'f' ? femSurname(d.sur) : d.sur); }
 function dmgAvg(d) { if (!d.weapon) return 1.2; const w = WEAPONS[d.weapon.id]; return (w[1] + w[2]) / 2; }
-function dwellerDps(d) { return dmgAvg(d) * (0.9 + 0.02 * d.lvl) * (1 + stat(d, 0) * 0.015) * (1 + petBonus(d, 'dmg')); }
+function dwellerDps(d) { return dmgAvg(d) * (0.9 + 0.02 * d.lvl) * (1 + stat(d, 0) * 0.015) * (1 + petBonus(d, 'dmg')) * (hasTr(d, 'brave') ? 1.25 : hasTr(d, 'coward') ? 0.8 : 1); }
 
 function genDweller(o = {}) {
   const g = o.g || (rnd() < 0.5 ? 'm' : 'f');
@@ -1229,6 +1290,8 @@ function genDweller(o = {}) {
     x: 120, fy: 0, tx: 120, path: null, wait: 0, face: 1, walk: 0,
   };
   if (o.lvl) { d.lvl = o.lvl; d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); d.hp = d.mhp; }
+  rollTraits(d);
+  d.hp = maxHp(d);
   return d;
 }
 function genLegend() {
@@ -1236,7 +1299,7 @@ function genLegend() {
   const d = genDweller({ g: L.g, rarity: 2, lvl: ri(3, 8) });
   d.name = L.n; d.sur = L.s; d.sp = L.sp.slice(); d.leg = true;
   d.look.hs2 = L.hair; d.look.beard = L.beard || 'none';
-  d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); d.hp = d.mhp;
+  d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); rollTraits(d); d.hp = maxHp(d);
   d.weapon = { u: uid(), k: 'w', id: L.w };
   d.outfit = { u: uid(), k: 'o', id: L.o };
   return d;
@@ -1267,7 +1330,7 @@ function resCap(k) {
     c = 5;
     const t = k === 'stim' ? 'medbay' : 'science';
     for (const r of S.rooms) if (r.t === t) c += ROOMS[t].store[r.l - 1] * r.s;
-    return c;
+    return rsDone('logistics') ? Math.round(c * 1.25) : c;
   }
   c = 100;
   for (const r of S.rooms) {
@@ -1276,12 +1339,12 @@ function resCap(k) {
     if (def.res === k || (def.res === 'cola' && (k === 'food' || k === 'water'))) c += def.store[r.l - 1] * r.s;
   }
   for (const r of S.rooms) if (r.t === 'storage') c += 25 * r.s * r.l;
-  return c;
+  return rsDone('logistics') ? Math.round(c * 1.25) : c;
 }
 function itemCap() {
   let c = 10;
   for (const r of S.rooms) if (r.t === 'storage') c += ROOMS.storage.items[r.l - 1] * r.s;
-  return c;
+  return c + (rsDone('logistics') ? 10 : 0);
 }
 function addRes(k, n) {
   const cap = resCap(k);
@@ -1350,7 +1413,8 @@ function newGame(vaultNo) {
     res: { power: 70, food: 70, water: 70, caps: 1200, quantum: 5, stim: 3, rad: 2 },
     rooms: [], dwellers: [], arrivals: [], inv: [], junk: {}, lunch: 1, robots: [], pets: [], todMode: 'auto',
     objs: [], objN: 0, quests: { list: [], active: [], refresh: 0 }, incs: [],
-    timers: { arrive: 25, inc: 360, raid: 420, stranger: 200 },
+    timers: { arrive: 25, inc: 360, raid: 420, stranger: 200, event: 150, trader: 420 },
+    buffs: [], research: { done: {}, cur: null, p: 0 }, event: null, trader: null,
     stats: { capsEarned: 0, kills: 0, babies: 0, built: 0 },
     tut: 0, tutDone: false, adT: 0, cam: null, lastRush: 0,
   };
@@ -1414,11 +1478,420 @@ function loadGame(data) {
   S.pets = S.pets || [];
   S.todMode = S.todMode || 'auto';
   migrate();
+  migrateMech();
   S.stats = S.stats || { capsEarned: 0, kills: 0, babies: 0, built: 0 };
   reindex();
   if (S.cam) { Cam.x = S.cam.x; Cam.y = S.cam.y; Cam.z = S.cam.z; }
   const away = clamp((Date.now() - (S.saved || Date.now())) / 1000, 0, 7200);
   if (away > 20) simOffline(away);
+}
+
+// ---- 04-mech.js ----
+// ===== Глубокие механики: черты характера, события с выбором, исследования, торговец, соседство комнат =====
+
+// ---------- черты характера ----------
+// [название, описание, знак: 1 — достоинство, -1 — недостаток, 0 — нейтрально, цвет]
+const TRAITS = {
+  worker:  ['Трудяга', 'Работает на 15% продуктивнее', 1, '#8dffa4'],
+  lazy:    ['Лентяй', 'Работает на 10% медленнее, но всегда в духе', -1, '#ffb070'],
+  brave:   ['Храбрец', 'Урон в бою +25%, не теряет счастье при тревоге', 1, '#ff8a6a'],
+  coward:  ['Трусишка', 'Урон в бою −20%', -1, '#b0a0ff'],
+  charmer: ['Душа компании', 'Соседи по комнате счастливее, быстрее знакомится', 1, '#ff9ad0'],
+  grump:   ['Ворчун', 'Портит настроение соседям по комнате', -1, '#9aa0a8'],
+  lucky:   ['Везунчик', 'Шанс удвоить собранный ресурс, больше крышек в Пустоши', 1, '#ffd24a'],
+  glutton: ['Обжора', 'Ест за полтора', -1, '#e8914a'],
+  ascetic: ['Аскет', 'Нужно на 40% меньше еды и воды', 1, '#7fe0ff'],
+  medic:   ['Санитар', 'Понемногу лечит всех в своей комнате', 1, '#ff6a6a'],
+  scav:    ['Барахольщик', 'Приносит из Пустоши больше хлама и вещей', 1, '#c8b07a'],
+  owl:     ['Сова', 'Ночью +20% к работе, днём −10%', 0, '#8aa0ff'],
+  lark:    ['Жаворонок', 'Днём +20% к работе, ночью −10%', 0, '#ffe07a'],
+  tough:   ['Крепыш', 'Здоровье +20%', 1, '#ff7a5a'],
+  genius:  ['Самоучка', 'Тренируется на 30% быстрее', 1, '#5ae0c8'],
+  radres:  ['Радиоустойчивый', 'Получает вдвое меньше радиации', 1, '#b6ff5a'],
+  firefly: ['Огнеборец', 'Тушит пожары вдвое быстрее', 1, '#ffa040'],
+  sprinter:['Проныра', 'Возвращается из Пустоши на 30% быстрее', 1, '#a0e0ff'],
+};
+const TRAIT_GOOD = Object.keys(TRAITS).filter(k => TRAITS[k][2] >= 0);
+const TRAIT_BAD = Object.keys(TRAITS).filter(k => TRAITS[k][2] < 0);
+function rollTraits(d) {
+  const n = d.rar === 2 ? 2 : d.rar === 1 ? (rnd() < 0.6 ? 2 : 1) : (rnd() < 0.25 ? 2 : 1);
+  const out = [];
+  while (out.length < n) {
+    const bad = d.rar === 2 ? false : rnd() < (d.rar ? 0.12 : 0.3);
+    const k = pick(bad ? TRAIT_BAD : TRAIT_GOOD);
+    if (out.includes(k)) continue;
+    if ((k === 'owl' && out.includes('lark')) || (k === 'lark' && out.includes('owl'))) continue;
+    if ((k === 'brave' && out.includes('coward')) || (k === 'coward' && out.includes('brave'))) continue;
+    if ((k === 'glutton' && out.includes('ascetic')) || (k === 'ascetic' && out.includes('glutton'))) continue;
+    out.push(k);
+  }
+  d.tr = out;
+  return out;
+}
+function hasTr(d, k) { return !!(d && d.tr && d.tr.includes(k)); }
+function isNightNow() { const st = WORLD && WORLD.st; if (st) return isNight(st); const h = new Date().getHours(); return h < 6 || h >= 21; }
+// множитель вклада жителя в работу комнаты
+function workMult(d) {
+  let m = 1;
+  if (hasTr(d, 'worker')) m *= 1.15;
+  if (hasTr(d, 'lazy')) m *= 0.9;
+  if (hasTr(d, 'owl')) m *= isNightNow() ? 1.2 : 0.9;
+  if (hasTr(d, 'lark')) m *= isNightNow() ? 0.9 : 1.2;
+  return m;
+}
+function traitChips(d, small) {
+  if (!d.tr || !d.tr.length) return '';
+  return `<span class="traits${small ? ' sm' : ''}">${d.tr.map(k => { const T = TRAITS[k]; return `<span class="trait ${T[2] > 0 ? 'good' : T[2] < 0 ? 'bad' : 'neu'}" style="--tc:${T[3]}" title="${T[1]}">${T[0]}</span>`; }).join('')}</span>`;
+}
+
+// ---------- временные эффекты ----------
+function buffMult(k) { let m = 1; for (const b of S.buffs || []) if (b.k === k && b.m) m *= b.m; return m; }
+function buffAdd(k) { let a = 0; for (const b of S.buffs || []) if (b.k === k && b.a) a += b.a; return a; }
+function addBuff(k, o, sec, name) { S.buffs = S.buffs || []; S.buffs.push(Object.assign({ k, t: sec, n: name }, o)); }
+function tickBuffs(dt) { if (!S.buffs) return; for (const b of S.buffs) b.t -= dt; S.buffs = S.buffs.filter(b => b.t > 0); }
+
+// ---------- исследования ----------
+// [название, описание, ярус, иконка]
+const RESEARCH = {
+  wiring:    ['Изоляция проводки', 'Комнаты потребляют на 10% меньше энергии', 1, 'power'],
+  hydro:     ['Гидропоника', '+10% к производству еды', 1, 'food'],
+  filters:   ['Тонкие фильтры', '+10% к производству воды', 1, 'water'],
+  bolts:     ['Усиленные засовы', 'Прочность двери +50%', 1, 'door'],
+  shifts:    ['Сменный график', '+10% к производству во всех комнатах', 2, 'clock'],
+  fieldmed:  ['Полевая медицина', 'Аптечки лечат на 50% сильнее', 2, 'stim'],
+  logistics: ['Логистика складов', 'Хранилища вмещают на 25% больше, склад +10 мест', 2, 'box'],
+  turret:    ['Турель у двери', 'Автоматическая турель стреляет по налётчикам у двери', 2, 'gun'],
+  reactor:   ['Автоматика реакторов', '+15% к выработке энергии', 3, 'bolt2'],
+  genetics:  ['Генетика', 'Дети растут в полтора раза быстрее', 3, 'child'],
+  survey:    ['Геологоразведка', '+25% крышек и хлама из Пустоши', 3, 'map'],
+  alarm:     ['Сигнализация', 'Враги приходят ослабленными (−20% здоровья)', 3, 'alert'],
+};
+const RS_COST = [0, 400, 1400, 3500], RS_TIME = [0, 90, 240, 480];
+function rsDone(k) { return !!(S.research && S.research.done[k]); }
+function rsTierOpen(t) {
+  if (t === 1) return true;
+  const prev = Object.keys(RESEARCH).filter(k => RESEARCH[k][2] === t - 1 && rsDone(k)).length;
+  if (t === 2) return prev >= 2 && popCount() >= 12;
+  return prev >= 2 && popCount() >= 25 && hasType('overseer');
+}
+function rsLockText(t) {
+  if (t === 2) return 'Нужно: 2 проекта I яруса и 12 жителей';
+  if (t === 3) return 'Нужно: 2 проекта II яруса, 25 жителей и Кабинет смотрителя';
+  return '';
+}
+function rsSpeed() {
+  let s = 1;
+  for (const r of S.rooms) if (r.t === 'science' && !r.off) for (const id of r.w) { const d = D(id); if (arrived(d)) s += stat(d, 4) * 0.012; }
+  return s;
+}
+function startResearch(k) {
+  const T = RESEARCH[k]; if (!T || rsDone(k) || S.research.cur) return false;
+  if (!rsTierOpen(T[2])) { toast(rsLockText(T[2]), 'warn'); return false; }
+  const c = RS_COST[T[2]];
+  if (S.res.caps < c) { toast('Не хватает крышек', 'bad'); Snd.bad(); return false; }
+  S.res.caps -= c;
+  S.research.cur = k; S.research.p = 0;
+  toast(`Начато исследование: ${T[0]}`, 'good');
+  Snd.build();
+  return true;
+}
+function updateResearch(dt) {
+  const R2 = S.research; if (!R2 || !R2.cur) return;
+  const T = RESEARCH[R2.cur];
+  R2.p += dt * rsSpeed() / RS_TIME[T[2]];
+  if (R2.p >= 1) {
+    R2.done[R2.cur] = true;
+    if (R2.cur === 'bolts') { const d0 = door(); if (d0) d0.hp = doorMaxHp(d0); }
+    if (!R.offline) { toast(`Исследование завершено: ${T[0]}!`, 'good'); Snd.level(); }
+    R2.cur = null; R2.p = 0;
+  }
+}
+function doorMaxHp(r) { return Math.round(DOOR_HP[r.l - 1] * (rsDone('bolts') ? 1.5 : 1)); }
+
+// ---------- соседство комнат ----------
+const SYNERGY = [
+  ['diner', 'garden', 0.1, 'Кухня рядом с оранжереей'],
+  ['water', 'purifier', 0.1, 'Общий водопровод'],
+  ['medbay', 'science', 0.12, 'Медики и учёные помогают друг другу'],
+  ['power', 'reactor', 0.1, 'Общая энергосеть'],
+  ['wshop', 'oshop', 0.15, 'Мастерские делятся инструментом'],
+  ['diner', 'cola', 0.08, 'Буфет с газировкой'],
+  ['radio', 'overseer', 0.15, 'Прямая линия со смотрителем'],
+  ['gym', 'athletic', 0.1, 'Спортивный блок'],
+  ['classroom', 'science', 0.1, 'Учебная лаборатория'],
+  ['lounge', 'gameroom', 0.1, 'Зона отдыха'],
+];
+function synergy(r) {
+  const out = { m: 1, list: [] };
+  if (!ROOMS[r.t]) return out;
+  for (const n of neighbors(r)) {
+    for (const [a, b, v, name] of SYNERGY) {
+      if ((r.t === a && n.t === b) || (r.t === b && n.t === a)) {
+        if (!out.list.some(x => x.id === n.id)) { out.m += v; out.list.push({ id: n.id, v, name, t: n.t }); }
+      }
+    }
+  }
+  return out;
+}
+// итоговый множитель скорости производства комнаты
+function prodMult(r) {
+  const def = ROOMS[r.t];
+  let m = synergy(r).m * buffMult('prod');
+  if (rsDone('shifts')) m *= 1.1;
+  if (def.res === 'food' && rsDone('hydro')) m *= 1.1;
+  if (def.res === 'water' && rsDone('filters')) m *= 1.1;
+  if (def.res === 'power') { m *= buffMult('power'); if (rsDone('reactor')) m *= 1.15; }
+  return m;
+}
+
+// ---------- события с выбором ----------
+const EVENTS = [
+  {
+    id: 'pipe', icon: 'water', col: '#4fb8f0', title: 'Прорыв трубы',
+    when: () => S.rooms.some(r => ROOMS[r.t] && ROOMS[r.t].res === 'water'),
+    setup: () => { const r = pick(S.rooms.filter(r => ROOMS[r.t] && ROOMS[r.t].res === 'water')); return { room: r.id }; },
+    text: e => `В комнате «${roomName(RM(e.room) || { t: 'water' })}» лопнула магистраль. Вода хлещет на пол, давление падает.`,
+    choices: e => {
+      const r = RM(e.room); const best = r ? workersOf(r).reduce((m, d) => Math.max(m, stat(d, 0)), 0) : 0;
+      return [
+        { l: 'Вызвать ремонтную бригаду', sub: '−120 крышек', cost: { caps: 120 }, run: () => 'Бригада заварила трубу за пару минут. Всё в порядке.' },
+        { l: 'Пусть чинят сами', sub: `Шанс ${Math.round(chance(0.35 + best * 0.06) * 100)}% · по Силе`, run: () => {
+          if (rnd() < chance(0.35 + best * 0.06)) { if (r) for (const d of workersOf(r)) gainXp(d, 40); return 'Жители справились сами и получили опыт!'; }
+          S.res.water = Math.max(0, S.res.water - 25); addBuff('prod', { m: 0.85 }, 90, 'Потоп'); return 'Не вышло: утечка съела 25 воды, работа убежища замедлилась на полторы минуты.';
+        } },
+      ];
+    },
+  },
+  {
+    id: 'surge', icon: 'power', col: '#f6c945', title: 'Скачок напряжения',
+    when: () => S.rooms.some(r => ROOMS[r.t] && ROOMS[r.t].res === 'power'),
+    setup: () => ({}),
+    text: () => 'Генераторы гудят на пределе: стрелки приборов в красной зоне. Можно снизить нагрузку — или рискнуть и выжать максимум.',
+    choices: () => [
+      { l: 'Снизить нагрузку', sub: 'Энергия −25% на 2 мин', run: () => { addBuff('power', { m: 0.75 }, 120, 'Щадящий режим'); return 'Генераторы переведены в щадящий режим.'; } },
+      { l: 'Выжать максимум', sub: 'Энергия +40% на 2 мин · риск пожара 40%', run: () => {
+        addBuff('power', { m: 1.4 }, 120, 'Форсаж генераторов');
+        if (rnd() < 0.4) { const r = pick(S.rooms.filter(r => ROOMS[r.t] && ROOMS[r.t].res === 'power')); if (r) startIncident('fire', r); return 'Форсаж! Но один из генераторов вспыхнул — тушите пожар!'; }
+        return 'Генераторы выдержали. Энергия течёт рекой!';
+      } },
+    ],
+  },
+  {
+    id: 'party', icon: 'smile', col: '#ffd24a', title: 'Предложение устроить праздник',
+    when: () => popCount() >= 6,
+    setup: () => ({}),
+    text: () => 'Жители просят разрешения устроить вечеринку в честь годовщины закрытия убежища. Музыка, танцы, двойная порция пайка.',
+    choices: () => [
+      { l: 'Устроить праздник', sub: '−20 еды, −20 воды · счастье +15 на 5 мин', cost: { food: 20, water: 20 }, run: () => { addBuff('hap', { a: 15 }, 300, 'Праздник'); for (const d of S.dwellers) if (d.st === 'vault') d.hap = Math.min(100, d.hap + 10); return 'Отличная вечеринка! Убежище гудит от смеха.'; } },
+      { l: 'Не сейчас', sub: 'Счастье −5', run: () => { for (const d of S.dwellers) if (d.st === 'vault') d.hap = Math.max(0, d.hap - 5); return 'Жители немного расстроились.'; } },
+    ],
+  },
+  {
+    id: 'doctor', icon: 'stim', col: '#ef6a5a', title: 'Бродячий доктор',
+    when: () => S.dwellers.some(d => d.st === 'vault' && (d.hp < effMax(d) * 0.8 || d.rad > 5)),
+    setup: () => ({}),
+    text: () => 'У двери стоит доктор с потёртым саквояжем. Предлагает осмотреть жителей — за разумную плату.',
+    choices: () => [
+      { l: 'Вылечить всех', sub: '−150 крышек · здоровье и радиация', cost: { caps: 150 }, run: () => { for (const d of S.dwellers) if (d.st === 'vault') { d.rad = 0; d.hp = effMax(d); } return 'Доктор вылечил всех и ушёл дальше по Пустоши.'; } },
+      { l: 'Купить аптечки', sub: '−100 крышек · +3 аптечки', cost: { caps: 100 }, run: () => { S.res.stim += 3; return 'Получено 3 аптечки.'; } },
+      { l: 'Отказаться', sub: '', run: () => 'Доктор пожал плечами и ушёл.' },
+    ],
+  },
+  {
+    id: 'signal', icon: 'radio', col: '#c58af0', title: 'Сигнал бедствия',
+    when: () => S.dwellers.some(d => d.st === 'vault' && !d.child && d.room),
+    setup: () => ({}),
+    text: () => 'Рация ловит слабый сигнал: «…кто-нибудь… мы у старой заправки… помогите…». Можно отправить одного жителя на короткую вылазку.',
+    choices: () => {
+      const best = S.dwellers.filter(d => d.st === 'vault' && !d.child).sort((a, b) => stat(b, 2) + stat(b, 0) - stat(a, 2) - stat(a, 0))[0];
+      const ch = best ? chance(0.45 + (stat(best, 2) + stat(best, 0)) * 0.025) : 0;
+      return [
+        { l: best ? `Послать: ${fullName(best)}` : 'Некого послать', sub: best ? `Успех ${Math.round(ch * 100)}% · по Выносливости и Силе` : '', dis: !best, run: () => {
+          if (rnd() < ch) {
+            if (S.arrivals.length < 5) { spawnArrival(rnd() < 0.2 ? 1 : 0); gainXp(best, 60); return `${fullName(best)} привёл(а) выжившего — он ждёт у двери!`; }
+            addCaps(150); return `${fullName(best)} нашёл(ла) только тайник: +150 крышек.`;
+          }
+          hurt(best, best.mhp * 0.35, 12); return `Это была засада! ${fullName(best)} вернулся(ась) раненым(ой).`;
+        } },
+        { l: 'Не рисковать', sub: '', run: () => 'Сигнал затих.' },
+      ];
+    },
+  },
+  {
+    id: 'quarrel', icon: 'people', col: '#ff9a6a', title: 'Ссора жителей',
+    when: () => S.dwellers.filter(d => d.st === 'vault' && !d.child).length >= 4,
+    setup: () => { const ds = S.dwellers.filter(d => d.st === 'vault' && !d.child); const a = pick(ds); let b = pick(ds); if (b === a) b = ds.find(x => x !== a); return { a: a.id, b: b.id }; },
+    text: e => { const a = D(e.a), b = D(e.b); return a && b ? `${fullName(a)} и ${fullName(b)} поссорились из-за последней банки тушёнки. Страсти накаляются.` : 'Жители поссорились.'; },
+    choices: e => {
+      const judge = S.dwellers.filter(d => d.st === 'vault' && !d.child).sort((x, y) => stat(y, 3) - stat(x, 3))[0];
+      const ch = judge ? chance(0.4 + stat(judge, 3) * 0.06) : 0.3;
+      return [
+        { l: judge ? `Рассудить (${judge.name})` : 'Рассудить', sub: `Успех ${Math.round(ch * 100)}% · по Харизме`, run: () => {
+          const a = D(e.a), b = D(e.b);
+          if (rnd() < ch) { for (const d of [a, b]) if (d) d.hap = Math.min(100, d.hap + 20); if (judge) gainXp(judge, 50); return 'Помирились и даже пожали руки. Счастье выросло.'; }
+          for (const d of [a, b]) if (d) d.hap = Math.max(0, d.hap - 20); return 'Спор перерос в драку. Оба ходят мрачнее тучи.';
+        } },
+        { l: 'Выдать по банке', sub: '−10 еды', cost: { food: 10 }, run: () => { for (const d of [D(e.a), D(e.b)]) if (d) d.hap = Math.min(100, d.hap + 10); return 'Сытые — значит, довольные.'; } },
+      ];
+    },
+  },
+  {
+    id: 'cache', icon: 'box', col: '#ffb84a', title: 'Слухи о тайнике',
+    when: () => popCount() >= 5,
+    setup: () => ({}),
+    text: () => 'Старый торговец шепчет о довоенном тайнике неподалёку. Карту отдаст за бутылку Атом-колы — или можно поискать самим.',
+    choices: () => {
+      const scout = S.dwellers.filter(d => d.st === 'vault' && !d.child).sort((a, b) => stat(b, 1) - stat(a, 1))[0];
+      const ch = scout ? chance(0.3 + stat(scout, 1) * 0.06) : 0;
+      return [
+        { l: 'Купить карту', sub: '−1 Атом-кола · ящик снабжения', cost: { quantum: 1 }, run: () => { S.lunch++; return 'Тайник найден: ящик снабжения ждёт вас!'; } },
+        { l: scout ? `Искать (${scout.name})` : 'Искать самим', sub: `Шанс ${Math.round(ch * 100)}% · по Восприятию`, dis: !scout, run: () => {
+          if (rnd() < ch) { const j = pick(Object.keys(JUNK).filter(k => JUNK[k][1] <= 2)); S.junk[j] = Math.min(99, (S.junk[j] || 0) + 3); addCaps(80); return `Нашли немного: +80 крышек и хлам (${JUNK[j][0]} ×3).`; }
+          return 'Тайник давно разграблен.';
+        } },
+        { l: 'Отказаться', sub: '', run: () => 'Торговец разочарованно сплюнул.' },
+      ];
+    },
+  },
+  {
+    id: 'pet', icon: 'paw', col: '#e0b070', title: 'Бездомный питомец',
+    when: () => popCount() >= 8,
+    setup: () => ({ pet: genPet(rnd() < 0.2 ? 1 : 0) }),
+    text: e => `У двери скулит ${PET_TYPES.find(p => p.id === e.pet.type).n.toLowerCase()}. Худой, но с умными глазами. Кажется, ему нужен дом.`,
+    choices: e => [
+      { l: 'Приютить', sub: '−15 еды · питомец в убежище', cost: { food: 15 }, run: () => { S.pets.push(e.pet); return `${petName(e.pet)} теперь живёт в убежище! Назначьте его жителю.`; } },
+      { l: 'Прогнать', sub: '', run: () => 'Питомец убежал в Пустошь.' },
+    ],
+  },
+  {
+    id: 'experiment', icon: 'rad', col: '#5ae0c8', title: 'Смелый эксперимент',
+    when: () => hasType('science') || hasType('medbay'),
+    setup: () => ({}),
+    text: () => 'Учёные предлагают опыт с облучёнными культурами. В случае успеха — запас лекарств. В случае неудачи — утечка радиации.',
+    choices: () => {
+      let I = 0; for (const r of S.rooms) if (r.t === 'science' || r.t === 'medbay') for (const id of r.w) { const d = D(id); if (d) I = Math.max(I, stat(d, 4)); }
+      const ch = chance(0.35 + I * 0.06);
+      return [
+        { l: 'Разрешить', sub: `Успех ${Math.round(ch * 100)}% · по Интеллекту`, run: () => {
+          if (rnd() < ch) { S.res.stim += 2; S.res.rad += 2; return 'Эксперимент удался: +2 аптечки и +2 антирадина.'; }
+          for (const d of S.dwellers) if (d.st === 'vault') d.rad = Math.min(d.mhp - 1, d.rad + 8); return 'Утечка! Все жители получили немного радиации.';
+        } },
+        { l: 'Запретить', sub: '', run: () => 'Учёные вздохнули и вернулись к работе.' },
+      ];
+    },
+  },
+  {
+    id: 'caravan', icon: 'bag', col: '#c8b07a', title: 'Караван на горизонте',
+    when: () => !S.trader && popCount() >= 6,
+    setup: () => ({}),
+    text: () => 'Дозорный заметил торговый караван. Можно подать сигнал ракетой — торговец свернёт к убежищу.',
+    choices: () => [
+      { l: 'Подать сигнал', sub: 'Торговец придёт к двери', run: () => { spawnTrader(); return 'Караван свернул к убежищу. Торговец ждёт у двери!'; } },
+      { l: 'Пусть идут мимо', sub: '', run: () => 'Караван скрылся за холмом.' },
+    ],
+  },
+];
+function chance(p) { return clamp(p, 0.05, 0.95); }
+function payCost(c) {
+  if (!c) return true;
+  for (const k in c) if ((S.res[k] || 0) < c[k]) return false;
+  for (const k in c) S.res[k] -= c[k];
+  return true;
+}
+function costOk(c) { if (!c) return true; for (const k in c) if ((S.res[k] || 0) < c[k]) return false; return true; }
+function spawnEvent(force) {
+  const pool = EVENTS.filter(e => e.when());
+  if (!pool.length) return;
+  const e = force ? EVENTS.find(x => x.id === force) : pick(pool);
+  if (!e) return;
+  S.event = { id: e.id, d: e.setup(), t: 240 };
+  if (!R.offline) { toast(`Сообщение смотрителю: ${e.title}`, 'warn'); Snd.open(); }
+}
+function eventDef() { return S.event ? EVENTS.find(e => e.id === S.event.id) : null; }
+function resolveEvent(i) {
+  const e = eventDef(); if (!e) return null;
+  const ch = e.choices(S.event.d)[i];
+  if (!ch || ch.dis) return null;
+  if (!payCost(ch.cost)) { toast('Не хватает ресурсов', 'bad'); Snd.bad(); return null; }
+  const res = ch.run();
+  S.stats.events = (S.stats.events || 0) + 1;
+  S.event = null;
+  return res;
+}
+
+// ---------- торговец ----------
+function spawnTrader() {
+  const stock = [];
+  const luckBonus = S.dwellers.some(d => hasTr(d, 'lucky')) ? 0.05 : 0;
+  for (let i = 0; i < 4; i++) {
+    const it = randomItem(rnd() < 0.08 + luckBonus ? 2 : rnd() < 0.35 ? 1 : 0);
+    stock.push({ k: 'item', it, price: Math.round(sellPrice(it) * 2.6) });
+  }
+  const j = pick(Object.keys(JUNK).filter(k => JUNK[k][1] >= 1 && JUNK[k][1] <= 3));
+  stock.push({ k: 'junk', id: j, n: 3, price: [40, 90, 200, 450][JUNK[j][1]] });
+  stock.push({ k: 'stim', n: 2, price: 140 });
+  stock.push({ k: 'rad', n: 2, price: 120 });
+  if (rnd() < 0.35) { const p = genPet(rnd() < 0.2 ? 1 : 0); stock.push({ k: 'pet', p, price: p.rar ? 1400 : 600 }); }
+  S.trader = { t: 240, stock, name: pick(['Бартер Билл', 'Мама Лу', 'Шестерня', 'Старый Мэйсон', 'Кэт-Хромоножка']) };
+  if (!R.offline) { toast(`Торговец ${S.trader.name} у двери убежища!`, 'good'); Snd.coin(); }
+}
+function buyFromTrader(i) {
+  const tr = S.trader; if (!tr) return false;
+  const o = tr.stock[i]; if (!o || o.sold) return false;
+  if (S.res.caps < o.price) { toast('Не хватает крышек', 'bad'); Snd.bad(); return false; }
+  if (o.k === 'item' && S.inv.length >= itemCap()) { toast('Склад полон', 'bad'); return false; }
+  S.res.caps -= o.price;
+  if (o.k === 'item') S.inv.push(o.it);
+  else if (o.k === 'junk') S.junk[o.id] = Math.min(99, (S.junk[o.id] || 0) + o.n);
+  else if (o.k === 'stim') S.res.stim += o.n;
+  else if (o.k === 'rad') S.res.rad += o.n;
+  else if (o.k === 'pet') S.pets.push(o.p);
+  o.sold = true;
+  Snd.coin();
+  return true;
+}
+function traderBuyPrice(it) { return Math.round(sellPrice(it) * 1.4); }
+
+// ---------- тик механик (раз в секунду) ----------
+function mechTick() {
+  tickBuffs(1);
+  updateResearch(1);
+  // санитары лечат соседей
+  for (const r of S.rooms) {
+    if (!r.w.length) continue;
+    const ws = workersOf(r).filter(arrived);
+    const medics = ws.filter(d => hasTr(d, 'medic')).length;
+    if (medics) for (const d of ws) d.hp = Math.min(effMax(d), d.hp + 0.35 * medics);
+  }
+  // торговец
+  if (S.trader) { S.trader.t -= 1; if (S.trader.t <= 0) { S.trader = null; if (!R.offline) toast('Торговец ушёл дальше по Пустоши'); } }
+  if (!R.offline && S.tutDone) {
+    S.timers.trader = (S.timers.trader == null ? 420 : S.timers.trader) - 1;
+    if (S.timers.trader <= 0) { S.timers.trader = ri(600, 900); if (!S.trader && popCount() >= 6) spawnTrader(); }
+    if (S.event) { S.event.t -= 1; if (S.event.t <= 0) { S.event = null; } }
+    S.timers.event = (S.timers.event == null ? 150 : S.timers.event) - 1;
+    if (S.timers.event <= 0) { S.timers.event = ri(200, 380); if (!S.event && popCount() >= 5) spawnEvent(); }
+  }
+}
+// влияние черт и эффектов на счастье (добавка к целевому значению)
+function hapTraitAdd(d) {
+  let a = buffAdd('hap');
+  if (hasTr(d, 'lazy')) a += 8;
+  const r = d.room ? RM(d.room) : null;
+  if (r) for (const id of r.w) {
+    if (id === d.id) continue;
+    const o = D(id); if (!o || !arrived(o)) continue;
+    if (hasTr(o, 'charmer')) a += 6;
+    if (hasTr(o, 'grump')) a -= 5;
+  }
+  return a;
+}
+function migrateMech() {
+  S.buffs = S.buffs || [];
+  S.research = S.research || { done: {}, cur: null, p: 0 };
+  if (S.event === undefined) S.event = null;
+  if (S.trader === undefined) S.trader = null;
+  for (const d of S.dwellers.concat(S.arrivals)) if (!d.tr) rollTraits(d);
 }
 
 // ---- 04-sim.js ----
@@ -1503,7 +1976,7 @@ function upgradeRoom(r) {
   if (S.res.caps < cost) { toast('Не хватает крышек', 'bad'); Snd.bad(); return; }
   S.res.caps -= cost;
   r.l++;
-  if (r.t === 'door') r.hp = DOOR_HP[r.l - 1];
+  if (r.t === 'door') r.hp = doorMaxHp(r);
   objProg('upgrade', 1);
   Snd.build();
   sparks(roomX(r) + roomW(r) * CW / 2, roomY(r) + FH / 2, '#7dff95', 40);
@@ -1682,7 +2155,7 @@ function sumStat(r) {
   const def = ROOMS[r.t];
   if (!def || def.st < 0) return 0;
   let s = 0;
-  for (const id of r.w) { const d = D(id); if (arrived(d)) s += stat(d, def.st) * (1 + petBonus(d, 'prod')); }
+  for (const id of r.w) { const d = D(id); if (arrived(d)) s += stat(d, def.st) * (1 + petBonus(d, 'prod')) * workMult(d); }
   return s;
 }
 function hapMult(r) {
@@ -1696,7 +2169,7 @@ function cycleTime(r) {
   const def = ROOMS[r.t];
   const ss = sumStat(r);
   if (!ss) return Infinity;
-  return (def.time * r.s) / (0.3 * r.s + 0.12 * ss) / hapMult(r);
+  return (def.time * r.s) / (0.3 * r.s + 0.12 * ss) / hapMult(r) / prodMult(r);
 }
 function roomOutput(r) { const def = ROOMS[r.t]; return Math.max(1, Math.round(def.out[r.l - 1] * SIZE_MULT[r.s - 1])); }
 function luckAvg(r) {
@@ -1772,6 +2245,7 @@ function collectRoom(r, auto) {
   let lucky = false;
   if (def.res === 'stim' || def.res === 'rad') caps = 2 * amt;
   if (rnd() < L * 0.015) { caps += amt; lucky = true; }
+  if (workersOf(r).some(d => hasTr(d, 'lucky')) && rnd() < 0.12) { got += def.res === 'cola' ? addRes('food', amt) + addRes('water', amt) : addRes(def.res, amt); lucky = true; }
   addCaps(caps);
   if (def.res === 'cola') { objProg('c_food', amt); objProg('c_water', amt); } else objProg('c_' + def.res, got);
   if (!R.offline) {
@@ -1852,11 +2326,12 @@ function sim(dt) {
 function consume(dt) {
   let p = 0;
   for (const r of S.rooms) if (consumes(r) && !r.off) p += powerUse(r);
+  if (rsDone('wiring')) p *= 0.9;
   S.res.power = Math.max(0, S.res.power - p * dt);
   let eaters = 0;
-  for (const d of S.dwellers) if (d.st === 'vault') eaters += d.child ? 0.5 : 1;
-  S.res.food = Math.max(0, S.res.food - eaters * 0.03 * dt);
-  S.res.water = Math.max(0, S.res.water - eaters * 0.03 * dt);
+  for (const d of S.dwellers) if (d.st === 'vault') eaters += (d.child ? 0.5 : 1) * (hasTr(d, 'glutton') ? 1.5 : hasTr(d, 'ascetic') ? 0.6 : 1);
+  S.res.food = Math.max(0, S.res.food - eaters * 0.025 * dt);
+  S.res.water = Math.max(0, S.res.water - eaters * 0.025 * dt);
 }
 function updateRoom(r, dt) {
   const def = ROOMS[r.t];
@@ -1874,7 +2349,7 @@ function updateRoom(r, dt) {
     for (const id of r.w) {
       const d = D(id);
       if (!arrived(d) || d.sp[def.st] >= 10) continue;
-      d.tp += (dt * mult * (1 + petBonus(d, 'train'))) / trainTime(d.sp[def.st]);
+      d.tp += (dt * mult * (1 + petBonus(d, 'train')) * (hasTr(d, 'genius') ? 1.3 : 1)) / trainTime(d.sp[def.st]);
       if (d.tp >= 1) trainUp(d, def.st);
     }
   } else if (def.kind === 'craft' && r.craft && !r.done) {
@@ -1882,7 +2357,7 @@ function updateRoom(r, dt) {
     if (!ss) return;
     let pb = 0;
     for (const id of r.w) pb += petBonus(D(id), 'craft');
-    r.craft.p += (dt * (0.4 + 0.12 * ss) * (1 + pb)) / r.craft.T;
+    r.craft.p += (dt * (0.4 + 0.12 * ss) * (1 + pb) * synergy(r).m) / r.craft.T;
     if (r.craft.p >= 1) {
       r.done = newItem(r.craft.k, r.craft.id);
       r.craft = null;
@@ -1955,7 +2430,7 @@ function updateDweller(d, dt) {
   if (S.res.water <= 0) d.rad = Math.max(d.rad, Math.min(d.mhp * 0.5, d.rad + 0.08 * dt));
   if (d.hp > effMax(d)) d.hp = effMax(d);
   if (d.preg > 0) { d.preg -= dt; if (d.preg <= 0) { d.preg = 0; giveBirth(d); } }
-  if (d.child > 0) { d.child -= dt; if (d.child <= 0) { d.child = 0; growUp(d); } }
+  if (d.child > 0) { d.child -= dt * (rsDone('genetics') ? 1.5 : 1); if (d.child <= 0) { d.child = 0; growUp(d); } }
   if (d.path && d.path.length) {
     if (R.offline) { const l = d.path[d.path.length - 1]; d.x = l.x; d.fy = l.f; d.path = null; d.inElev = false; }
     else { followPath(d, dt); return; }
@@ -2071,7 +2546,7 @@ function tryPairing(r) {
   const ms = ws.filter(d => d.g === 'm'), fs = ws.filter(d => d.g === 'f');
   for (const m of ms) for (const f of fs) {
     if (related(m, f)) continue;
-    const ch = 0.06 * (1 + (stat(m, 3) + stat(f, 3)) * 0.05);
+    const ch = 0.06 * (1 + (stat(m, 3) + stat(f, 3)) * 0.05) * (hasTr(m, 'charmer') || hasTr(f, 'charmer') ? 1.6 : 1);
     if (rnd() < ch) { r.pair = { m: m.id, f: f.id, ph: 0, t: 0 }; return; }
   }
 }
@@ -2081,7 +2556,7 @@ function useStim(d) {
   if (S.res.stim < 1) { toast('Нет аптечек — постройте Медпункт', 'bad'); return; }
   if (d.hp >= effMax(d) - 0.5) { toast('Житель полностью здоров'); return; }
   S.res.stim--;
-  d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')));
+  d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')) * (rsDone('fieldmed') ? 1.5 : 1));
   objProg('heal', 1);
   Snd.collect();
   const p = dwellerWorldPos(d); if (p) sparks(p.x, p.y - 26, '#ff6a5a', 12);
@@ -2176,7 +2651,8 @@ function makeEnemies(k, r, n, outside) {
   const e = ENEMY[k], th = threat();
   const w = roomW(r) * CW;
   const arr = [];
-  for (let i = 0; i < n; i++) arr.push({ hp: e.hp * th, m: e.hp * th, x: outside ? PORTAL.x0 - rf(10, 110) : rf(16, w - 16), ph: rnd() * 6, tg: i, face: -1 });
+  const hk = rsDone('alarm') ? 0.8 : 1;
+  for (let i = 0; i < n; i++) arr.push({ hp: e.hp * th * hk, m: e.hp * th * hk, x: outside ? PORTAL.x0 - rf(10, 110) : rf(16, w - 16), ph: rnd() * 6, tg: i, face: -1 });
   return arr;
 }
 function startIncident(k, r, silent, gen) {
@@ -2208,7 +2684,7 @@ function defenders(r) {
 function hurt(d, dmg, rad) {
   const red = 1 - clamp(stat(d, 2), 0, 17) * 0.025;
   d.hp -= dmg * red;
-  if (rad) d.rad = Math.min(d.mhp - 1, d.rad + rad);
+  if (rad) d.rad = Math.min(d.mhp - 1, d.rad + rad * (hasTr(d, 'radres') ? 0.5 : 1));
   if (d.hp > effMax(d)) d.hp = effMax(d);
   d.hurt = 0.25;
   if (d.hp <= 0) dieDweller(d, 'vault');
@@ -2230,7 +2706,7 @@ function updateIncidents(dt) {
     for (const d of defs) {
       if (!alive.length) break;
       const tgt = alive[d.id % alive.length];
-      const dmg = inc.k === 'fire' ? (1.5 + 0.05 * d.lvl + stat(d, 2) * 0.05) : dwellerDps(d);
+      const dmg = inc.k === 'fire' ? (1.5 + 0.05 * d.lvl + stat(d, 2) * 0.05) * (hasTr(d, 'firefly') ? 2 : 1) : dwellerDps(d);
       tgt.hp -= dmg * dt;
       d.fight = 0.3;
       d.fireCd = (d.fireCd || 0) - dt;
@@ -2258,6 +2734,12 @@ function updateIncidents(dt) {
       for (let j = alive.length - 1; j >= 0; j--) if (alive[j].hp <= 0) alive.splice(j, 1);
     }
     // враги атакуют
+    if (breach && rsDone('turret') && alive.length) {
+      const tg = alive[Math.floor(inc.t * 2) % alive.length];
+      tg.hp -= 7 * dt;
+      if (!R.offline && rnd() < dt * 6) { tracer(roomX(r) + 8, roomY(r) + 16, tg.x + rf(-3, 3), roomY(r) + FEET - 20, '#ffe08a'); Snd.shot(); }
+      if (tg.hp <= 0) { S.stats.kills++; objProg('kill', 1); alive.splice(alive.indexOf(tg), 1); }
+    }
     if (breach) {
       let dps = 0;
       for (const x of alive) dps += e.dps * dpsMul;
@@ -2282,7 +2764,7 @@ function updateIncidents(dt) {
       addCaps(reward);
       if (inc.k === 'fire') objProg('fire', 1);
       for (const d of defs) gainXp(d, 15);
-      if (inc.ext) door().hp = DOOR_HP[door().l - 1];
+      if (inc.ext) door().hp = doorMaxHp(door());
       if (!R.offline) {
         if (reward) {
           toast(`${e.n} — угроза устранена! +${reward} крышек`, 'good');
@@ -2310,7 +2792,7 @@ function updateIncidents(dt) {
         }
         if (!next) {
           S.incs.splice(i, 1);
-          door().hp = DOOR_HP[door().l - 1];
+          door().hp = doorMaxHp(door());
           if (!R.offline) toast(`${e.n} ушли${inc.stolen ? `, украв ${inc.stolen} крышек` : ''}`, 'warn');
           continue;
         }
@@ -2381,7 +2863,7 @@ function exLog(d, msg) {
 function packCap(d) { return 8 + stat(d, 0) * 2; }
 function recallExplorer(d) {
   if (d.st !== 'explore' || d.ex.back >= 0) return;
-  d.ex.back = d.ex.t / 2 / (1 + petBonus(d, 'wret') * 3);
+  d.ex.back = d.ex.t / 2 / (1 + petBonus(d, 'wret') * 3) * (hasTr(d, 'sprinter') ? 0.7 : 1);
   d.ex.backT = d.ex.back;
   exLog(d, 'Возвращаюсь домой.');
 }
@@ -2399,13 +2881,13 @@ function updateExplorer(d, dt) {
     return;
   }
   ex.t += dt;
-  d.rad = Math.min(d.mhp - 1, d.rad + dt * 0.03 * (1 - clamp(stat(d, 2), 0, 15) * 0.05));
+  d.rad = Math.min(d.mhp - 1, d.rad + dt * 0.03 * (1 - clamp(stat(d, 2), 0, 15) * 0.05) * (hasTr(d, 'radres') ? 0.5 : 1));
   if (d.hp > effMax(d)) d.hp = effMax(d);
   ex.nev -= dt;
   if (ex.nev <= 0) { ex.nev = rf(10, 17); wasteEvent(d); }
   if (d.st !== 'explore') return;
   if (d.hp < effMax(d) * 0.45 && ex.stim > 0) {
-    ex.stim--; d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')));
+    ex.stim--; d.hp = Math.min(effMax(d), d.hp + d.mhp * (0.45 + petBonus(d, 'heal')) * (rsDone('fieldmed') ? 1.5 : 1));
     exLog(d, 'Использовал(а) аптечку.');
   }
   if (d.rad > d.mhp * 0.35 && ex.radw > 0) {
@@ -2418,16 +2900,16 @@ function wasteEvent(d) {
   const lv = 1 + ex.t / 120;
   const L = stat(d, 6), P = stat(d, 1), C = stat(d, 3), I = stat(d, 4);
   const place = pick(WASTE_PLACES);
-  const kind = weighted([['caps', 26 + L], ['junk', 16 + P], ['item', 9 + P * 0.6 + L * 0.4], ['fight', 15 + lv * 1.2], ['friend', 6 + C], ['loc', 8 + I], ['none', 8]]);
+  const kind = weighted([['caps', 26 + L], ['junk', 16 + P], ['item', (9 + P * 0.6 + L * 0.4) * (hasTr(d, 'scav') ? 1.35 : 1)], ['fight', 15 + lv * 1.2], ['friend', 6 + C], ['loc', 8 + I], ['none', 8]]);
   if (kind === 'caps') {
-    const n = Math.round(ri(3, 12) * (1 + L * 0.08) * (1 + ex.t / 400) * (1 + petBonus(d, 'wcaps')));
+    const n = Math.round(ri(3, 12) * (1 + L * 0.08) * (1 + ex.t / 400) * (1 + petBonus(d, 'wcaps')) * (hasTr(d, 'lucky') ? 1.2 : 1) * (rsDone('survey') ? 1.25 : 1));
     ex.caps += n;
     exLog(d, `Нашёл(ла) ${n} крышек ${place}.`);
   } else if (kind === 'junk') {
     const rar = rnd() < 0.02 + L * 0.004 ? 3 : rnd() < 0.08 + L * 0.01 ? 2 : rnd() < 0.3 ? 1 : 0;
     const ids = Object.keys(JUNK).filter(j => JUNK[j][1] === rar);
     const j = pick(ids);
-    const n = ri(1, 2);
+    const n = Math.ceil(ri(1, 2) * (hasTr(d, 'scav') ? 1.5 : 1) * (rsDone('survey') ? 1.25 : 1));
     ex.junk[j] = (ex.junk[j] || 0) + n;
     exLog(d, `Подобрал(а) хлам: ${JUNK[j][0]} ×${n} ${place}.`);
   } else if (kind === 'item') {
@@ -2728,7 +3210,7 @@ function slowTick() {
         if (def && def.st >= 0) { const v = stat(d, def.st), b = stat(d, bestStat(d)); t += 10 + 25 * (v / Math.max(1, b)); if (def.kind === 'train') t += 5; }
         else if (r.t === 'door') t += 20;
         if (r.off) t -= 15;
-        if (incAt(r.id)) t -= 10;
+        if (incAt(r.id) && !hasTr(d, 'brave')) t -= 10;
       }
       if (d.preg) t += 10;
       if (d.pet) t += 5;
@@ -2737,10 +3219,11 @@ function slowTick() {
     if (S.res.water <= 0) t -= 25;
     if (d.hp < effMax(d) * 0.5) t -= 10;
     if (d.rad > d.mhp * 0.3) t -= 10;
-    t = clamp(t + radio, 5, 100);
+    t = clamp(t + radio + hapTraitAdd(d), 5, 100);
     d.hap += (t - d.hap) * 0.012;
   }
   for (const r of S.rooms) if (r.t === 'living') tryPairing(r);
+  mechTick();
   const pop = popCount();
   S.timers.arrive -= 1;
   if (S.timers.arrive <= 0) {
@@ -6366,6 +6849,8 @@ function render(time) {
   drawActors(t, view);
   for (const r of vis) roomOverlay(r, t);
   drawRobots(t);
+  drawSynergyLinks(vis, t);
+  drawTrader(t);
   drawLabels(vis);
   drawBubbles(t);
   if (R.place) drawPlacement(t);
@@ -6582,7 +7067,7 @@ function drawDoor(r, x, y, t) {
   }
   if (breach && Math.random() < 0.12) sparks(cx - 30 + rf(-2, 2), cy + rf(-20, 20), '#ffc24a', 3);
   // прочность двери
-  const mx = DOOR_HP[r.l - 1];
+  const mx = doorMaxHp(r);
   if (r.hp < mx) {
     const bx = x + 8, by = y - 8, w = 64, n = 12, k = clamp(r.hp / mx, 0, 1);
     ctx.fillStyle = 'rgba(6,8,7,.85)'; rr(ctx, bx - 1.5, by - 1.5, w + 3, 5.4, 2.2); ctx.fill();
@@ -6730,6 +7215,67 @@ function drawActors(t, view) {
     drawDwellerAt(d, x, gy, t, pose);
     if (d.pet) drawPet(ctx, d.pet, x - d.face * 13, gy, d.face, pose === 'walk', t);
     if (ex.home) drawBadge(x, gy - 58 + Math.sin(t * 4 + 1) * 2, 'bag', '#7dff95');
+  }
+}
+// ===== торговец с повозкой =====
+const TRADER_X = PORTAL.x0 - 118;
+function drawTrader(t) {
+  if (!S.trader) return;
+  const g = ctx, x = TRADER_X, y = GROUND_Y;
+  // повозка
+  g.save(); g.translate(x - 26, y);
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(0, 1, 30, 3, 0, 0, 7); g.fill();
+  g.strokeStyle = '#2a1c10'; g.lineWidth = 2.2; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(18, -10); g.lineTo(36, -4); g.stroke();
+  g.fillStyle = vgrad(g, -24, -8, ['#9a6a3a', '#6a4424', '#4a2e18']); rr(g, -24, -24, 44, 15, 1.5); g.fill();
+  g.fillStyle = 'rgba(0,0,0,.3)'; for (let i = -20; i < 20; i += 8) g.fillRect(i, -24, 0.8, 15);
+  g.strokeStyle = '#3a2412'; g.lineWidth = 0.8; rr(g, -24, -24, 44, 15, 1.5); g.stroke();
+  // тент
+  g.fillStyle = vgrad(g, -48, -22, ['#e8dcbc', '#c8b48a', '#9a8662']);
+  g.beginPath(); g.moveTo(-24, -22); g.bezierCurveTo(-24, -52, 20, -52, 20, -22); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(80,60,30,.6)'; g.lineWidth = 0.7;
+  for (const k of [-0.5, 0, 0.5]) { g.beginPath(); g.moveTo(-2 + k * 44, -23); g.quadraticCurveTo(-2 + k * 30, -46, -2 + k * 10, -45); g.stroke(); }
+  g.fillStyle = '#b8412f'; g.fillRect(-24, -30, 44, 2.2);
+  // ящики и бочка
+  crate(g, -14, -24, 10, 8, '#8a6a3a'); crate(g, -3, -24, 9, 6, '#6a7a4a');
+  // колёса
+  for (const wx of [-15, 11]) {
+    g.fillStyle = '#2a1c10'; g.beginPath(); g.arc(wx, -7, 7.4, 0, 7); g.fill();
+    g.strokeStyle = '#8a6a3a'; g.lineWidth = 1.4; g.beginPath(); g.arc(wx, -7, 6, 0, 7); g.stroke();
+    g.lineWidth = 0.9; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; g.beginPath(); g.moveTo(wx, -7); g.lineTo(wx + Math.cos(a) * 6, -7 + Math.sin(a) * 6); g.stroke(); }
+    g.fillStyle = '#c8a060'; g.beginPath(); g.arc(wx, -7, 1.3, 0, 7); g.fill();
+  }
+  // фонарь
+  g.strokeStyle = '#2a2a2a'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(20, -34); g.lineTo(24, -34); g.lineTo(24, -30); g.stroke();
+  g.fillStyle = '#ffd88a'; rr(g, 22.3, -30, 3.4, 4.6, 1); g.fill();
+  g.globalCompositeOperation = 'lighter';
+  const lg = g.createRadialGradient(24, -28, 0, 24, -28, 26); lg.addColorStop(0, `rgba(255,190,90,${0.45 + 0.08 * Math.sin(t * 7)})`); lg.addColorStop(1, 'rgba(255,190,90,0)');
+  g.fillStyle = lg; g.beginPath(); g.arc(24, -28, 26, 0, 7); g.fill();
+  g.globalCompositeOperation = 'source-over';
+  g.restore();
+  drawHuman(ctx, traderParams(x + 22, y, t, 1));
+  if (Cam.z > 0.45) drawBadge(x + 22, y - 62 + Math.sin(t * 3) * 2, 'bag', '#c8a050');
+}
+// значки соседства на стенах между комнатами
+function drawSynergyLinks(vis, t) {
+  if (Cam.z < 0.55) return;
+  const s = 0.34 / clamp(Cam.z, 0.7, 1.4);
+  const seen = new Set();
+  for (const r of vis) {
+    if (!ROOMS[r.t]) continue;
+    const syn = synergy(r);
+    for (const x of syn.list) {
+      const key = Math.min(r.id, x.id) + ':' + Math.max(r.id, x.id);
+      if (seen.has(key)) continue; seen.add(key);
+      const n = RM(x.id); if (!n) continue;
+      let bx, by;
+      if (n.f === r.f) { bx = n.c > r.c ? roomX(n) : roomX(r); by = roomY(r) + FH * 0.42; }
+      else { const c0 = Math.max(r.c, n.c), c1 = Math.min(r.c + roomW(r), n.c + roomW(n)); bx = (c0 + c1) / 2 * CW; by = Math.max(roomY(r), roomY(n)); }
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      const gl = ctx.createRadialGradient(bx, by, 0, bx, by, 16); gl.addColorStop(0, `rgba(255,200,80,${0.35 + 0.15 * Math.sin(t * 3 + r.id)})`); gl.addColorStop(1, 'rgba(255,200,80,0)');
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(bx, by, 16, 0, 7); ctx.fill(); ctx.restore();
+      drawMedal(bx, by, 'star', '#e8a820', s, { tail: false });
+    }
   }
 }
 function drawBadge(x, y, what, col) {
@@ -7007,6 +7553,8 @@ function onTap(sx, sy) {
     const p = bubblePos(r);
     if (Math.hypot(w.x - p.x, w.y - p.y) < 20 * bs) { collectRoom(r); return; }
   }
+  // торговец у дороги
+  if (S.trader && Math.abs(w.x - TRADER_X) < 34 && w.y > GROUND_Y - 60 && w.y < GROUND_Y + 12) { ACT.trader(); return; }
   // улица: прибывшие и вернувшиеся
   const gy = GROUND_Y;
   if (w.x < PORTAL.x1 && w.y > gy - 70 && w.y < gy + 12) {
@@ -7141,7 +7689,7 @@ function modal(html, cls) {
   else m.innerHTML = `<div class="term modal-card ${cls || ''}"><div class="term-scr">${html}</div></div>`;
   m.hidden = false;
 }
-function closeModal() { $('#modal').hidden = true; $('#modal').innerHTML = ''; }
+function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; m.classList.remove('ev'); }
 function confirmBox(text, yes, onYes, danger) {
   R.confirmCb = onYes;
   modal(`<p class="confirm-t">${text}</p><div class="t-row-btns"><button class="t-btn" data-a="modalClose">Отмена</button><button class="t-btn ${danger ? 'danger' : 'pri'}" data-a="confirmYes">${yes}</button></div>`);
@@ -7264,6 +7812,8 @@ function updateHud() {
   const dead = S.dwellers.filter(d => d.st === 'dead').length;
   if (dead) chips.push(railBtn('deadList', 'bad', 'skull', 'Погибшие', dead));
   if (S.lunch > 0) chips.push(railBtn('lunch', 'lunch', 'box', 'Ящик', S.lunch));
+  if (S.event) { const e = eventDef(); if (e) chips.push(railBtn('eventOpen', 'warn wide pulse', e.icon, 'Сообщение')); }
+  if (S.trader) chips.push(railBtn('trader', 'good wide', 'bag', 'Торговец'));
   const html = chips.join('');
   const box = $('#rail');
   if (box._h !== html) { box._h = html; box.innerHTML = html; }
@@ -7290,6 +7840,9 @@ function roomView(id) {
       if (r.t === 'door') return doorHtml(r);
       const def = ROOMS[r.t];
       let h = `<div class="hdr"><div><div class="lvl">Уровень ${r.l} ${pips(r.l)}${r.s > 1 ? ` · ${r.s === 2 ? 'двойная' : 'тройная'}` : ''}</div><p>${def.desc}</p></div>${def.st >= 0 ? `<div class="need"><em>${STAT_ABBR[def.st]}</em><small>${STAT_NAMES[def.st]}</small></div>` : ''}</div>`;
+      const syn = synergy(r);
+      if (syn.list.length) h += `<div class="syn">${svg('star')}<span>${syn.list.map(x => `<b>${esc(x.name)}</b> +${Math.round(x.v * 100)}%`).join(' · ')}</span></div>`;
+      else { const hint = SYNERGY.find(([a, b]) => a === r.t || b === r.t); if (hint) h += `<div class="syn off">${svg('star')}<span>Поставьте рядом «${esc(ROOMS[hint[0] === r.t ? hint[1] : hint[0]].n)}» — бонус +${Math.round(hint[2] * 100)}%</span></div>`; }
       const inc = incAt(r.id);
       if (inc) h += `<div class="banner bad">${svg('alert')}<span><b>${ENEMY[inc.k].n}!</b> ${inc.k === 'fire' ? 'Жители тушат пожар.' : 'Жители сражаются.'} Отправьте сюда сильных и вооружённых.</span></div>`;
       if (r.off) h += `<div class="banner warn">${svg('power')}<span>Нет энергии — комната обесточена. Соберите энергию или постройте Электростанцию.</span></div>`;
@@ -7347,7 +7900,7 @@ function roomView(id) {
 }
 function doorHtml(r) {
   let h = `<div class="hdr"><div><div class="lvl">Уровень ${r.l} ${pips(r.l)}</div><p>Первая линия обороны. Охрана с оружием отбивает набеги ещё у двери.</p></div></div>`;
-  h += `<div class="status col"><div class="row-sp"><span>Прочность двери</span><span class="mono">${fmt(r.hp)}/${fmt(DOOR_HP[r.l - 1])}</span></div>${bar(r.hp / DOOR_HP[r.l - 1])}</div>`;
+  h += `<div class="status col"><div class="row-sp"><span>Прочность двери</span><span class="mono">${fmt(r.hp)}/${fmt(doorMaxHp(r))}</span></div>${bar(r.hp / doorMaxHp(r))}</div>`;
   const inc = incAt(r.id);
   if (inc) h += `<div class="banner bad">${svg('alert')}<span><b>${ENEMY[inc.k].n}</b> у двери!</span></div>`;
   h += `<h3 class="t-h">Охрана ${r.w.length}/2</h3><div class="slots">`;
@@ -7394,8 +7947,9 @@ function dwellerView(id) {
       const need = xpNeed(d.lvl);
       let h = `<div class="dw-head"><canvas class="portrait" id="portrait"></canvas><div class="dw-info">
         <div class="lvl">${d.rar ? rarTag(d.rar) : ''} Уровень ${d.lvl}${d.child ? ' · ребёнок' : ''}</div>
+        ${traitChips(d)}
         <div class="kv"><span>Опыт</span>${bar(d.xp / need)}<small class="mono">${fmt(d.xp)}/${fmt(need)}</small></div>
-        <div class="kv"><span>Здоровье</span>${hpBar(d)}<small class="mono">${Math.ceil(d.hp)}/${Math.round(d.mhp)}</small></div>
+        <div class="kv"><span>Здоровье</span>${hpBar(d)}<small class="mono">${Math.ceil(d.hp)}/${Math.round(maxHp(d))}</small></div>
         <div class="kv"><span>Радиация</span>${bar(d.rad / d.mhp, '#ff5f4a')}<small class="mono">${Math.round(d.rad)}</small></div>
         <div class="kv"><span>Счастье</span>${bar(d.hap / 100, '#ffc24a')}<small class="mono">${Math.round(d.hap)}%</small></div>
         <div class="muted small">${esc(locText(d))}${d.preg ? ` · беременна (${fmtTime(d.preg)})` : ''}</div>
@@ -7777,7 +8331,7 @@ function arrivalsView() {
       const full = popCount() >= popCap();
       let h = full ? `<div class="banner warn">${svg('alert')}<span>Мест нет (${popCount()}/${popCap()}). Постройте или улучшите Жилые помещения.</span></div>` : '';
       h += `<p class="t-p">Выжившие просятся внутрь. Впустите — или прогоните.</p>`;
-      h += S.arrivals.map(d => `<div class="card"><div class="row-sp">${av(d)}<span class="grow"><b class="${rarCls(d.rar)}">${esc(fullName(d))}</b><small>${d.rar ? RAR[d.rar] + ' · ' : ''}Ур. ${d.lvl}${d.weapon ? ' · ' + esc(itemName(d.weapon)) : ''}</small></span></div>${spList(d, bestStat(d))}<div class="t-row-btns"><button class="t-btn small danger" data-a="reject" data-id="${d.id}">Прогнать</button><button class="t-btn small pri" data-a="accept" data-id="${d.id}" ${full ? 'disabled' : ''}>Впустить</button></div></div>`).join('');
+      h += S.arrivals.map(d => `<div class="card"><div class="row-sp">${av(d)}<span class="grow"><b class="${rarCls(d.rar)}">${esc(fullName(d))}</b><small>${d.rar ? RAR[d.rar] + ' · ' : ''}Ур. ${d.lvl}${d.weapon ? ' · ' + esc(itemName(d.weapon)) : ''}</small>${traitChips(d, true)}</span></div>${spList(d, bestStat(d))}<div class="t-row-btns"><button class="t-btn small danger" data-a="reject" data-id="${d.id}">Прогнать</button><button class="t-btn small pri" data-a="accept" data-id="${d.id}" ${full ? 'disabled' : ''}>Впустить</button></div></div>`).join('');
       if (S.arrivals.length > 1) h += `<button class="t-btn pri wide" data-a="acceptAll" ${full ? 'disabled' : ''}>Впустить всех</button>`;
       return h;
     },
@@ -7798,6 +8352,7 @@ function menuView() {
     render() {
       return `<div class="t-row-btns col">
         <button class="t-btn pri" data-a="close">Продолжить</button>
+        <button class="t-btn" data-a="research">${svg('robot')} Исследования${S.research && S.research.cur ? ` <small>· идёт: ${esc(RESEARCH[S.research.cur][0])}</small>` : ''}</button>
         <button class="t-btn" data-a="objectives">${svg('list')} Цели и ящики</button>
         <button class="t-btn" data-a="sound">${svg(Snd.on ? 'sound' : 'mute')} Звук: ${Snd.on ? 'вкл' : 'выкл'}</button>
         <button class="t-btn" data-a="saveNow">Сохранить</button>
@@ -8075,6 +8630,115 @@ function initUiEvents() {
   window.addEventListener('pointercancel', () => { UI.down = false; });
 }
 
+// ---- 10z-mech-ui.js ----
+// ===== Интерфейс новых механик: исследования, события, торговец =====
+function researchView() {
+  return {
+    key: 'research', live: true, title: 'Исследования',
+    render() {
+      const Rs = S.research;
+      let h = `<p class="t-p">Проекты навсегда улучшают убежище. Работники Лаборатории с высоким Интеллектом ускоряют исследования (сейчас ×${rsSpeed().toFixed(2)}).</p>`;
+      if (Rs.cur) {
+        const T = RESEARCH[Rs.cur];
+        const left = (1 - Rs.p) * RS_TIME[T[2]] / rsSpeed();
+        h += `<div class="status col rs-cur"><div class="row-sp"><span>${svg(T[3])} <b>${esc(T[0])}</b></span><span class="mono">${fmtTime(left)}</span></div>${bar(Rs.p)}${S.res.quantum > 0 ? `<button class="t-btn q small" data-a="rsQ">${svg('quantum')} Завершить за 1 Атом-колу</button>` : ''}</div>`;
+      }
+      for (const tier of [1, 2, 3]) {
+        const open = rsTierOpen(tier);
+        h += `<h3 class="t-h">Ярус ${['I', 'II', 'III'][tier - 1]} <small>${RS_COST[tier]} крышек · ${fmtTime(RS_TIME[tier])}</small></h3>`;
+        if (!open) h += `<p class="t-p muted small">${rsLockText(tier)}</p>`;
+        h += `<div class="rs-grid">`;
+        for (const k of Object.keys(RESEARCH).filter(k => RESEARCH[k][2] === tier)) {
+          const T = RESEARCH[k], done = rsDone(k), cur = Rs.cur === k;
+          const can = open && !done && !Rs.cur;
+          h += `<button class="rs${done ? ' done' : ''}${cur ? ' cur' : ''}${!open ? ' lock' : ''}" data-a="rsStart" data-k="${k}" ${can ? '' : 'disabled'}>
+            <span class="rs-ic">${svg(T[3])}</span><b>${esc(T[0])}</b><small>${esc(T[1])}</small>
+            <em>${done ? 'Изучено' : cur ? 'Идёт…' : !open ? 'Закрыто' : Rs.cur ? 'Ждёт' : `${svg('caps')} ${RS_COST[tier]}`}</em></button>`;
+        }
+        h += `</div>`;
+      }
+      return h;
+    },
+  };
+}
+function eventCardHtml(result) {
+  const e = eventDef();
+  if (result != null) {
+    return `<div class="ev-card"><div class="ev-art" style="--ec:${R.lastEvCol || '#7dff95'}"><span class="ev-medal">${svg(R.lastEvIcon || 'star')}</span></div>
+      <div class="ev-body"><small>ИТОГ</small><h2>${esc(R.lastEvTitle || '')}</h2><p>${esc(result)}</p>
+      <div class="t-row-btns col"><button class="t-btn pri" data-a="modalClose">Хорошо</button></div></div></div>`;
+  }
+  if (!e) return '';
+  const d = S.event.d;
+  const ch = e.choices(d);
+  return `<div class="ev-card"><div class="ev-art" style="--ec:${e.col}"><span class="ev-medal">${svg(e.icon)}</span><i class="ev-timer">${fmtTime(S.event.t)}</i></div>
+    <div class="ev-body"><small>СООБЩЕНИЕ СМОТРИТЕЛЮ</small><h2>${esc(e.title)}</h2><p>${esc(e.text(d))}</p>
+    <div class="t-row-btns col">${ch.map((c, i) => `<button class="t-btn${i === 0 ? ' pri' : ''}" data-a="eventPick" data-i="${i}" ${c.dis || !costOk(c.cost) ? 'disabled' : ''}><span>${esc(c.l)}${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</span></button>`).join('')}</div>
+    <button class="link ev-later" data-a="modalClose">Решить позже</button></div></div>`;
+}
+function showEvent(result) { modal(eventCardHtml(result), 'raw'); $('#modal').classList.add('ev'); }
+function traderView() {
+  return {
+    key: 'trader', live: true, title: () => S.trader ? `Торговец: ${S.trader.name}` : 'Торговец', alive: () => !!S.trader,
+    render() {
+      const tr = S.trader;
+      const tab = TRADE_TAB;
+      let h = `<div class="trader-hd"><canvas class="tr-portrait" id="tr-portrait"></canvas><div><p class="t-p">«Всё честно, смотритель. Крышки вперёд — товар ваш.»</p><p class="t-p muted small">Уйдёт через ${fmtTime(tr.t)} · у вас ${svg('caps')} <b class="mono">${fmt(S.res.caps)}</b></p></div></div>`;
+      h += `<div class="seg"><button class="${tab === 'buy' ? 'on' : ''}" data-a="tradeTab" data-v="buy">Купить</button><button class="${tab === 'sell' ? 'on' : ''}" data-a="tradeTab" data-v="sell">Продать</button></div>`;
+      if (tab === 'buy') {
+        h += `<div class="list">${tr.stock.map((o, i) => {
+          let ic, nm, sub, cls = '';
+          if (o.k === 'item') { ic = o.it.k === 'w' ? 'gun' : 'shirt'; nm = itemName(o.it); sub = itemDesc(o.it); cls = rarCls(itemRar(o.it)); }
+          else if (o.k === 'junk') { ic = 'junk'; nm = `${JUNK[o.id][0]} ×${o.n}`; sub = 'Хлам для мастерских'; }
+          else if (o.k === 'stim') { ic = 'stim'; nm = `Аптечки ×${o.n}`; sub = 'Лечение'; }
+          else if (o.k === 'rad') { ic = 'rad'; nm = `Антирадин ×${o.n}`; sub = 'Снимает облучение'; }
+          else { ic = 'paw'; nm = petName(o.p); sub = petDesc(o.p); cls = rarCls(o.p.rar); }
+          return `<div class="row${o.sold ? ' dead' : ''}">${svg(ic, 'r' + (o.it ? itemRar(o.it) : 0))}<span class="grow"><b class="${cls}">${esc(nm)}</b><small>${esc(sub)}</small></span>${o.sold ? '<span class="muted small">Продано</span>' : `<button class="t-btn small pri" data-a="tradeBuy" data-i="${i}" ${S.res.caps < o.price ? 'disabled' : ''}>${svg('caps')} ${fmt(o.price)}</button>`}</div>`;
+        }).join('')}</div>`;
+      } else {
+        const items = S.inv.slice().sort((a, b) => traderBuyPrice(b) - traderBuyPrice(a));
+        h += items.length ? `<p class="t-p muted small">Торговец платит на 40% больше, чем скупщик на складе.</p><div class="list">${items.map(it => `<div class="row">${svg(it.k === 'w' ? 'gun' : 'shirt', 'r' + itemRar(it))}<span class="grow"><b class="${rarCls(itemRar(it))}">${esc(itemName(it))}</b><small>${esc(itemDesc(it))}</small></span><button class="t-btn small" data-a="tradeSell" data-u="${it.u}">+${fmt(traderBuyPrice(it))}</button></div>`).join('')}</div>` : '<p class="empty-t">На складе нечего продать.</p>';
+      }
+      return h;
+    },
+    after(b) { const c = b.querySelector('#tr-portrait'); if (c) drawTraderPortrait(c); },
+  };
+}
+let TRADE_TAB = 'buy';
+const TRADER_LOOK = { style: 'trench', c1: '#6a5236', c2: '#3a2a1a', hat: 'straw' };
+function traderParams(x, y, t, s) {
+  return { x, y, face: 1, s: s || 1, id: 913, t, pose: 'idle', look: TRADER_LOOK, skin: '#d9a47a', hairC: '#7a5a3a', hair: 'curly', beard: 'beard', mood: 'happy', hat: 'straw' };
+}
+function drawTraderPortrait(canvas) {
+  const g = canvas.getContext('2d');
+  const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+  const w = canvas.clientWidth || 84, h = canvas.clientHeight || 96;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#6a5a44'); bg.addColorStop(1, '#2a221a');
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  drawHuman(g, traderParams(w / 2, h + 26, performance.now() / 1000, 2.2));
+}
+Object.assign(ACT, {
+  research: () => UI.open(researchView(), true),
+  rsStart: ds => { if (startResearch(ds.k)) UI.render(true); },
+  rsQ: () => { if (!S.research.cur || S.res.quantum < 1) return; S.res.quantum--; S.research.p = 0.999; UI.render(true); },
+  eventOpen: () => { if (S.event) showEvent(); },
+  eventPick: ds => {
+    const e = eventDef(); if (!e) return closeModal();
+    R.lastEvIcon = e.icon; R.lastEvCol = e.col; R.lastEvTitle = e.title;
+    const res = resolveEvent(+ds.i);
+    if (res != null) { Snd.collect(); showEvent(res); }
+  },
+  trader: () => { TRADE_TAB = 'buy'; UI.open(traderView(), true); },
+  tradeTab: ds => { TRADE_TAB = ds.v; UI.render(true); },
+  tradeBuy: ds => { if (buyFromTrader(+ds.i)) { toast('Покупка совершена', 'good'); UI.render(true); } },
+  tradeSell: ds => {
+    const it = S.inv.find(x => x.u === +ds.u); if (!it || !S.trader) return;
+    S.inv.splice(S.inv.indexOf(it), 1); addCaps(traderBuyPrice(it)); Snd.coin(); UI.render(true);
+  },
+});
+
 // ---- 11-yandex.js ----
 // ===== Яндекс Игры SDK =====
 // На Яндекс Играх SDK подключается из /sdk.js. Вне платформы игра работает автономно:
@@ -8331,7 +8995,7 @@ async function boot() {
 }
 // хук для автотестов
 window.__shelterIcons = ICON;
-window.__shelter = { get S() { return S; }, R, Cam, UI, ART, WORLD, sim, simOffline, ACT, newGame, startPlaying, buildRoom, spotsFor, spawnArrival, acceptArrival, startIncident, startRaid, spawnStranger, genPet, RM, D, assign, upgradeRoom, roomView, craftView, questsView, centerOn, drawHuman, dwellerParams, genDweller, CHR, outfitLook };
+window.__shelter = { get S() { return S; }, R, Cam, UI, ART, WORLD, sim, simOffline, ACT, newGame, startPlaying, buildRoom, spotsFor, spawnArrival, acceptArrival, startIncident, startRaid, spawnStranger, genPet, RM, D, assign, upgradeRoom, roomView, craftView, questsView, centerOn, spawnEvent, spawnTrader, drawHuman, dwellerParams, genDweller, CHR, outfitLook };
 // предпросмотр в веб-обёртке: состояние переживает обновление страницы
 const HOT = window.claude && window.claude.hot;
 try { if (HOT && HOT.snapshot) HOT.snapshot(() => (S && R.playing ? { save: serialize() } : {})); } catch (e) {}

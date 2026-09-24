@@ -100,6 +100,8 @@ function render(time) {
   drawActors(t, view);
   for (const r of vis) roomOverlay(r, t);
   drawRobots(t);
+  drawSynergyLinks(vis, t);
+  drawTrader(t);
   drawLabels(vis);
   drawBubbles(t);
   if (R.place) drawPlacement(t);
@@ -316,7 +318,7 @@ function drawDoor(r, x, y, t) {
   }
   if (breach && Math.random() < 0.12) sparks(cx - 30 + rf(-2, 2), cy + rf(-20, 20), '#ffc24a', 3);
   // прочность двери
-  const mx = DOOR_HP[r.l - 1];
+  const mx = doorMaxHp(r);
   if (r.hp < mx) {
     const bx = x + 8, by = y - 8, w = 64, n = 12, k = clamp(r.hp / mx, 0, 1);
     ctx.fillStyle = 'rgba(6,8,7,.85)'; rr(ctx, bx - 1.5, by - 1.5, w + 3, 5.4, 2.2); ctx.fill();
@@ -464,6 +466,67 @@ function drawActors(t, view) {
     drawDwellerAt(d, x, gy, t, pose);
     if (d.pet) drawPet(ctx, d.pet, x - d.face * 13, gy, d.face, pose === 'walk', t);
     if (ex.home) drawBadge(x, gy - 58 + Math.sin(t * 4 + 1) * 2, 'bag', '#7dff95');
+  }
+}
+// ===== торговец с повозкой =====
+const TRADER_X = PORTAL.x0 - 118;
+function drawTrader(t) {
+  if (!S.trader) return;
+  const g = ctx, x = TRADER_X, y = GROUND_Y;
+  // повозка
+  g.save(); g.translate(x - 26, y);
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(0, 1, 30, 3, 0, 0, 7); g.fill();
+  g.strokeStyle = '#2a1c10'; g.lineWidth = 2.2; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(18, -10); g.lineTo(36, -4); g.stroke();
+  g.fillStyle = vgrad(g, -24, -8, ['#9a6a3a', '#6a4424', '#4a2e18']); rr(g, -24, -24, 44, 15, 1.5); g.fill();
+  g.fillStyle = 'rgba(0,0,0,.3)'; for (let i = -20; i < 20; i += 8) g.fillRect(i, -24, 0.8, 15);
+  g.strokeStyle = '#3a2412'; g.lineWidth = 0.8; rr(g, -24, -24, 44, 15, 1.5); g.stroke();
+  // тент
+  g.fillStyle = vgrad(g, -48, -22, ['#e8dcbc', '#c8b48a', '#9a8662']);
+  g.beginPath(); g.moveTo(-24, -22); g.bezierCurveTo(-24, -52, 20, -52, 20, -22); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(80,60,30,.6)'; g.lineWidth = 0.7;
+  for (const k of [-0.5, 0, 0.5]) { g.beginPath(); g.moveTo(-2 + k * 44, -23); g.quadraticCurveTo(-2 + k * 30, -46, -2 + k * 10, -45); g.stroke(); }
+  g.fillStyle = '#b8412f'; g.fillRect(-24, -30, 44, 2.2);
+  // ящики и бочка
+  crate(g, -14, -24, 10, 8, '#8a6a3a'); crate(g, -3, -24, 9, 6, '#6a7a4a');
+  // колёса
+  for (const wx of [-15, 11]) {
+    g.fillStyle = '#2a1c10'; g.beginPath(); g.arc(wx, -7, 7.4, 0, 7); g.fill();
+    g.strokeStyle = '#8a6a3a'; g.lineWidth = 1.4; g.beginPath(); g.arc(wx, -7, 6, 0, 7); g.stroke();
+    g.lineWidth = 0.9; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; g.beginPath(); g.moveTo(wx, -7); g.lineTo(wx + Math.cos(a) * 6, -7 + Math.sin(a) * 6); g.stroke(); }
+    g.fillStyle = '#c8a060'; g.beginPath(); g.arc(wx, -7, 1.3, 0, 7); g.fill();
+  }
+  // фонарь
+  g.strokeStyle = '#2a2a2a'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(20, -34); g.lineTo(24, -34); g.lineTo(24, -30); g.stroke();
+  g.fillStyle = '#ffd88a'; rr(g, 22.3, -30, 3.4, 4.6, 1); g.fill();
+  g.globalCompositeOperation = 'lighter';
+  const lg = g.createRadialGradient(24, -28, 0, 24, -28, 26); lg.addColorStop(0, `rgba(255,190,90,${0.45 + 0.08 * Math.sin(t * 7)})`); lg.addColorStop(1, 'rgba(255,190,90,0)');
+  g.fillStyle = lg; g.beginPath(); g.arc(24, -28, 26, 0, 7); g.fill();
+  g.globalCompositeOperation = 'source-over';
+  g.restore();
+  drawHuman(ctx, traderParams(x + 22, y, t, 1));
+  if (Cam.z > 0.45) drawBadge(x + 22, y - 62 + Math.sin(t * 3) * 2, 'bag', '#c8a050');
+}
+// значки соседства на стенах между комнатами
+function drawSynergyLinks(vis, t) {
+  if (Cam.z < 0.55) return;
+  const s = 0.34 / clamp(Cam.z, 0.7, 1.4);
+  const seen = new Set();
+  for (const r of vis) {
+    if (!ROOMS[r.t]) continue;
+    const syn = synergy(r);
+    for (const x of syn.list) {
+      const key = Math.min(r.id, x.id) + ':' + Math.max(r.id, x.id);
+      if (seen.has(key)) continue; seen.add(key);
+      const n = RM(x.id); if (!n) continue;
+      let bx, by;
+      if (n.f === r.f) { bx = n.c > r.c ? roomX(n) : roomX(r); by = roomY(r) + FH * 0.42; }
+      else { const c0 = Math.max(r.c, n.c), c1 = Math.min(r.c + roomW(r), n.c + roomW(n)); bx = (c0 + c1) / 2 * CW; by = Math.max(roomY(r), roomY(n)); }
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      const gl = ctx.createRadialGradient(bx, by, 0, bx, by, 16); gl.addColorStop(0, `rgba(255,200,80,${0.35 + 0.15 * Math.sin(t * 3 + r.id)})`); gl.addColorStop(1, 'rgba(255,200,80,0)');
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(bx, by, 16, 0, 7); ctx.fill(); ctx.restore();
+      drawMedal(bx, by, 'star', '#e8a820', s, { tail: false });
+    }
   }
 }
 function drawBadge(x, y, what, col) {

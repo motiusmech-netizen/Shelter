@@ -50,11 +50,12 @@ function statBonus(d, i) { return d.outfit ? OUTFITS[d.outfit.id][1][i] : 0; }
 function stat(d, i) { return d.sp[i] + statBonus(d, i); }
 function bestStat(d) { let b = 0; for (let i = 1; i < 7; i++) if (stat(d, i) > stat(d, b)) b = i; return b; }
 function xpNeed(l) { return Math.floor(40 + 30 * Math.pow(l, 1.4)); }
-function effMax(d) { return Math.max(1, d.mhp - d.rad); }
+function maxHp(d) { return d.mhp * (hasTr(d, 'tough') ? 1.2 : 1); }
+function effMax(d) { return Math.max(1, maxHp(d) - d.rad); }
 function isAdult(d) { return !d.child; }
 function fullName(d) { return d.name + ' ' + (d.g === 'f' ? femSurname(d.sur) : d.sur); }
 function dmgAvg(d) { if (!d.weapon) return 1.2; const w = WEAPONS[d.weapon.id]; return (w[1] + w[2]) / 2; }
-function dwellerDps(d) { return dmgAvg(d) * (0.9 + 0.02 * d.lvl) * (1 + stat(d, 0) * 0.015) * (1 + petBonus(d, 'dmg')); }
+function dwellerDps(d) { return dmgAvg(d) * (0.9 + 0.02 * d.lvl) * (1 + stat(d, 0) * 0.015) * (1 + petBonus(d, 'dmg')) * (hasTr(d, 'brave') ? 1.25 : hasTr(d, 'coward') ? 0.8 : 1); }
 
 function genDweller(o = {}) {
   const g = o.g || (rnd() < 0.5 ? 'm' : 'f');
@@ -70,6 +71,8 @@ function genDweller(o = {}) {
     x: 120, fy: 0, tx: 120, path: null, wait: 0, face: 1, walk: 0,
   };
   if (o.lvl) { d.lvl = o.lvl; d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); d.hp = d.mhp; }
+  rollTraits(d);
+  d.hp = maxHp(d);
   return d;
 }
 function genLegend() {
@@ -77,7 +80,7 @@ function genLegend() {
   const d = genDweller({ g: L.g, rarity: 2, lvl: ri(3, 8) });
   d.name = L.n; d.sur = L.s; d.sp = L.sp.slice(); d.leg = true;
   d.look.hs2 = L.hair; d.look.beard = L.beard || 'none';
-  d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); d.hp = d.mhp;
+  d.mhp = 105 + (d.lvl - 1) * (2.5 + d.sp[2] * 0.5); rollTraits(d); d.hp = maxHp(d);
   d.weapon = { u: uid(), k: 'w', id: L.w };
   d.outfit = { u: uid(), k: 'o', id: L.o };
   return d;
@@ -108,7 +111,7 @@ function resCap(k) {
     c = 5;
     const t = k === 'stim' ? 'medbay' : 'science';
     for (const r of S.rooms) if (r.t === t) c += ROOMS[t].store[r.l - 1] * r.s;
-    return c;
+    return rsDone('logistics') ? Math.round(c * 1.25) : c;
   }
   c = 100;
   for (const r of S.rooms) {
@@ -117,12 +120,12 @@ function resCap(k) {
     if (def.res === k || (def.res === 'cola' && (k === 'food' || k === 'water'))) c += def.store[r.l - 1] * r.s;
   }
   for (const r of S.rooms) if (r.t === 'storage') c += 25 * r.s * r.l;
-  return c;
+  return rsDone('logistics') ? Math.round(c * 1.25) : c;
 }
 function itemCap() {
   let c = 10;
   for (const r of S.rooms) if (r.t === 'storage') c += ROOMS.storage.items[r.l - 1] * r.s;
-  return c;
+  return c + (rsDone('logistics') ? 10 : 0);
 }
 function addRes(k, n) {
   const cap = resCap(k);
@@ -191,7 +194,8 @@ function newGame(vaultNo) {
     res: { power: 70, food: 70, water: 70, caps: 1200, quantum: 5, stim: 3, rad: 2 },
     rooms: [], dwellers: [], arrivals: [], inv: [], junk: {}, lunch: 1, robots: [], pets: [], todMode: 'auto',
     objs: [], objN: 0, quests: { list: [], active: [], refresh: 0 }, incs: [],
-    timers: { arrive: 25, inc: 360, raid: 420, stranger: 200 },
+    timers: { arrive: 25, inc: 360, raid: 420, stranger: 200, event: 150, trader: 420 },
+    buffs: [], research: { done: {}, cur: null, p: 0 }, event: null, trader: null,
     stats: { capsEarned: 0, kills: 0, babies: 0, built: 0 },
     tut: 0, tutDone: false, adT: 0, cam: null, lastRush: 0,
   };
@@ -255,6 +259,7 @@ function loadGame(data) {
   S.pets = S.pets || [];
   S.todMode = S.todMode || 'auto';
   migrate();
+  migrateMech();
   S.stats = S.stats || { capsEarned: 0, kills: 0, babies: 0, built: 0 };
   reindex();
   if (S.cam) { Cam.x = S.cam.x; Cam.y = S.cam.y; Cam.z = S.cam.z; }
