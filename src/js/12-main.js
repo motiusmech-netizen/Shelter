@@ -30,7 +30,7 @@ function renderMenu(t) {
   // облака
   for (const cl of WORLD.clouds) {
     const x = ((cl.x + t * cl.v * 2) % (w + 600) + w + 600) % (w + 600) - 300;
-    ctx.drawImage(cl.c, x, hz * 0.2 + cl.y * 0.6 + 60, cl.w * 1.2, cl.h * 1.2);
+    ctx.globalAlpha = cl.a || 1; ctx.drawImage(cl.c, x, hz * 0.2 + cl.y * 0.6 + 60, cl.w * 1.2, cl.h * 1.2); ctx.globalAlpha = 1;
   }
   // слои гор и руин
   for (const [name, sp, k, dy] of [['far', 4, 1.1, 0.02], ['mid', 9, 1.5, 0.07]]) {
@@ -54,14 +54,20 @@ function renderMenu(t) {
   ctx.restore();
   ctx.strokeStyle = rgba(day ? '#ffd8a0' : '#8aa0d0', 0.45); ctx.lineWidth = 2;
   ctx.beginPath(); for (let x = 0; x <= w + 20; x += 18) { const y = top + Math.sin(x * 0.02) * 8 + Math.sin(x * 0.07 + 1) * 4 - Math.max(0, 40 - Math.abs(x - w / 2) * 0.2); x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
-  // гермодверь
-  const r = Math.min(w * 0.36, h * 0.2), cx = w / 2, cy = h - r * 0.72;
-  ctx.fillStyle = '#0a0a0a'; ctx.beginPath(); ctx.arc(cx, cy, r * 1.16, 0, 7); ctx.fill();
-  ctx.lineWidth = r * 0.12; ctx.strokeStyle = '#4a4c48'; ctx.beginPath(); ctx.arc(cx, cy, r * 1.16, 0, 7); ctx.stroke();
-  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r * 1.22, Math.PI * 1.05, Math.PI * 1.95); ctx.lineWidth = r * 0.06; ctx.strokeStyle = '#e8b422'; ctx.setLineDash([r * 0.12, r * 0.12]); ctx.stroke(); ctx.restore();
-  const zz = Cam.z; Cam.z = 1;
-  drawGearDoor(ctx, cx, cy, r, t * 0.06, S ? S.vault : '042');
-  Cam.z = zz;
+  // гермодверь в массивной раме
+  const r = Math.min(w * 0.29, h * 0.17), cx = w / 2, cy = h - r * 0.8;
+  const sc = r / DOOR_R;
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.arc(cx, cy + r * 0.05, r * 1.32, 0, 7); ctx.fill();
+  const kk = Math.min(6, Math.max(1, Math.ceil(sc * Cam.dpr)));
+  drawVaultDoor(ctx, cx, cy, 0, t, { k: kk, num: S ? S.vault : '042', lvl: 2, s: sc, rot: t * 0.05 });
+  // жители у входа
+  if (!R.menuFolks) { const S0 = S; if (!S) S = { nid: 900000 }; R.menuFolks = [genDweller({ g: 'm' }), genDweller({ g: 'f' })]; R.menuFolks[1].pet = genPet(0); S = S0; R.menuFolks[1].pet.type = 'shep'; R.menuFolks[0].hap = 90; R.menuFolks[1].hap = 80; }
+  const fs = r / 52, gy = h - 6;
+  const [a1, b1] = R.menuFolks;
+  a1.face = 1; b1.face = -1;
+  drawHuman(ctx, dwellerParams(a1, cx - r * 1.52, gy, t, 'idle', fs));
+  drawPet(ctx, b1.pet, cx + r * 1.26, gy, -1, false, t, fs);
+  drawHuman(ctx, dwellerParams(b1, cx + r * 1.62, gy, t + 3, 'talk', fs));
   // лучи света
   ctx.globalCompositeOperation = 'lighter';
   for (let i = 0; i < 5; i++) {
@@ -156,7 +162,7 @@ async function boot() {
 }
 // хук для автотестов
 window.__shelterIcons = ICON;
-window.__shelter = { get S() { return S; }, R, Cam, UI, ART, WORLD, sim, simOffline, ACT, newGame, startPlaying, buildRoom, spotsFor, spawnArrival, acceptArrival, startIncident, startRaid, spawnStranger, genPet, RM, D, assign, upgradeRoom, roomView, craftView, questsView, centerOn, spawnEvent, spawnTrader, drawHuman, dwellerParams, genDweller, CHR, outfitLook };
+window.__shelter = { get S() { return S; }, R, Cam, UI, ART, WORLD, sim, simOffline, ACT, newGame, startPlaying, buildRoom, spotsFor, spawnArrival, acceptArrival, startIncident, startRaid, spawnStranger, genPet, RM, D, assign, upgradeRoom, roomView, craftView, questsView, centerOn, spawnEvent, spawnTrader, drawHuman, dwellerParams, genDweller, CHR, outfitLook, drawPet, drawBird, drawBeast, drawRoach, drawMolerat, drawScorp };
 // предпросмотр в веб-обёртке: состояние переживает обновление страницы
 const HOT = window.claude && window.claude.hot;
 try { if (HOT && HOT.snapshot) HOT.snapshot(() => (S && R.playing ? { save: serialize() } : {})); } catch (e) {}

@@ -4,9 +4,9 @@ const TOD = [
   [0, '#050914', '#0b142b', '#1b2440', '#cfe0ff', '#27324f', 1],
   [4.6, '#060a18', '#111a36', '#252c4a', '#cfe0ff', '#2c3756', 1],
   [6.0, '#243058', '#80546a', '#ee9a68', '#ffb070', '#8c7482', 0.2],
-  [7.5, '#3f6e9c', '#98a8b4', '#f0c890', '#ffe0a8', '#e8d4c0', 0],
-  [12, '#4e84b2', '#a6bfc6', '#eedaaf', '#fff8e0', '#ffffff', 0],
-  [16.5, '#4a79a4', '#aab8b6', '#f2cb8c', '#ffe6b0', '#fff0dc', 0],
+  [7.5, '#3a70a8', '#8fb4cc', '#f2c890', '#ffe0a8', '#eed8c0', 0],
+  [12, '#3f7fc0', '#92c2df', '#f3e0b4', '#fff8e0', '#ffffff', 0],
+  [16.5, '#3d74b0', '#9cbcd0', '#f4cc8a', '#ffe6b0', '#fff0dc', 0],
   [18.4, '#2b3462', '#b05f6c', '#ffa65c', '#ffb066', '#e2a48c', 0],
   [19.8, '#141a3a', '#4b3a5c', '#a4574a', '#ff9a6a', '#7a6680', 0.4],
   [21.3, '#070b1b', '#111932', '#232a46', '#cfe0ff', '#303c5c', 1],
@@ -146,20 +146,35 @@ function buildClouds(st) {
   WORLD.clouds = [];
   const rng = seeded(3);
   const night = isNight(st);
+  const k = 2;
+  const lit = night ? mixc('#8a96c8', st.hor, 0.25) : mixc('#fffaf0', st.hor, 0.3);
+  const mid = night ? mixc('#3a4468', st.mid, 0.4) : mixc('#d8dce6', st.mid, 0.35);
+  const dark = night ? mixc('#1e2440', st.top, 0.5) : mixc('#8a90a8', st.top, 0.35);
   for (let i = 0; i < 7; i++) {
-    const w = 120 + rng() * 160, h = 30 + rng() * 26;
-    const k = 1;
-    const c = mkCanvas(w * k, h * k * 1.6), g = c.getContext('2d');
-    const lit = mixc('#ffffff', st.hor, 0.35), dark = mixc('#7a7c90', st.top, 0.4);
-    for (let j = 0; j < 14; j++) {
-      const x = w * (0.1 + rng() * 0.8), y = h * (0.6 + rng() * 0.5), r = h * (0.3 + rng() * 0.45);
-      const gr = g.createRadialGradient(x, y - r * 0.3, 1, x, y, r);
-      gr.addColorStop(0, rgba(night ? '#4a5270' : lit, night ? 0.35 : 0.75));
-      gr.addColorStop(0.6, rgba(night ? '#2a3050' : dark, night ? 0.2 : 0.4));
-      gr.addColorStop(1, rgba(dark, 0));
-      g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    const w = 120 + rng() * 170, h = 34 + rng() * 22, pad = 6;
+    const c = mkCanvas((w + pad * 2) * k, (h + pad * 2) * k), g = c.getContext('2d');
+    g.setTransform(k, 0, 0, k, pad * k, pad * k);
+    // кучевое облако: пухлые шапки над плоским основанием
+    const base = h * 0.86;
+    const p = new Path2D();
+    const n = 5 + Math.floor(rng() * 3);
+    for (let j = 0; j < n; j++) {
+      const u = (j + 0.5) / n, bell = Math.sin(u * Math.PI);
+      const r = h * (0.2 + 0.32 * bell) * (0.85 + rng() * 0.3);
+      const x = w * (0.08 + u * 0.84) + (rng() - 0.5) * 8, y = base - r * (0.5 + rng() * 0.3);
+      p.moveTo(x + r, y); p.arc(x, y, r, 0, Math.PI * 2);
+      if (bell > 0.6 && rng() < 0.7) { const r2 = r * (0.5 + rng() * 0.2), x2 = x + (rng() - 0.5) * r, y2 = y - r * 0.55; p.moveTo(x2 + r2, y2); p.arc(x2, y2, r2, 0, Math.PI * 2); }
     }
-    WORLD.clouds.push({ c, w, h: h * 1.6, x: rng() * 3000 - 1400, y: -170 + rng() * 150, v: 3 + rng() * 5, p: 0.85 + rng() * 0.1 });
+    for (let j = 0; j < 6; j++) { const x = w * (0.14 + j * 0.144), r = h * (0.17 + rng() * 0.06); p.moveTo(x + r, base - r * 0.7); p.arc(x, base - r * 0.7, r, 0, Math.PI * 2); }
+    g.save();
+    g.beginPath(); g.rect(-pad, -pad, w + pad * 2, base + 0.5 + pad); g.clip();
+    // светлый гребень: заливаем всё светом, затем тело облака со сдвигом вниз закрывает середину
+    g.fillStyle = night ? mixc(lit, '#dfe6ff', 0.3) : '#ffffff'; g.fill(p);
+    g.globalCompositeOperation = 'source-atop';
+    g.save(); g.translate(-1.2, 2.6); g.fillStyle = vgrad(g, -4, base, [lit, mid, dark]); g.fill(p); g.restore();
+    g.fillStyle = rgba(dark, 0.5); g.fillRect(-pad, base - 5, w + pad * 2, 6);
+    g.restore();
+    WORLD.clouds.push({ c, w: w + pad * 2, h: h + pad * 2, x: rng() * 3000 - 1400, y: -170 + rng() * 150, v: 3 + rng() * 5, p: 0.85 + rng() * 0.1, a: night ? 0.7 : 0.92 });
   }
 }
 
@@ -370,7 +385,7 @@ function drawLayers(t, view) {
     if (cl.x > 1800) cl.x = -1600;
     const wx = cl.x + Cam.x * cl.p, wy = hzW - 200 + cl.y + Cam.y * 0.3;
     ctx.setTransform(z, 0, 0, z, (wx - Cam.x) * z, (wy - Cam.y) * z);
-    ctx.drawImage(cl.c, 0, 0, cl.w, cl.h);
+    ctx.globalAlpha = cl.a || 1; ctx.drawImage(cl.c, 0, 0, cl.w, cl.h); ctx.globalAlpha = 1;
   }
   for (const [name, p, dy] of [['far', 0.78, 30], ['mid', 0.5, 42]]) {
     const L = WORLD.layers[name];
