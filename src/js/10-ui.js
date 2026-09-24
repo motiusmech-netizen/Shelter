@@ -54,7 +54,8 @@ function toast(msg, kind) {
   R.lastToast = msg; R.lastToastT = now;
   const el = document.createElement('div');
   el.className = 'toast ' + (kind || '');
-  el.textContent = msg;
+  el.innerHTML = `<span class="t-ic">${svg(kind === 'bad' ? 'alert' : kind === 'warn' ? 'alert' : 'star')}</span><span class="t-tx"></span>`;
+  el.querySelector('.t-tx').textContent = msg;
   box.appendChild(el);
   while (box.children.length > 2) box.firstChild.remove();
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2800);
@@ -105,22 +106,49 @@ const RES_GRAD = {
   water: ['#0a4a7a', '#5ac8ff', 'rgba(90,200,255,.6)', '#c8f0ff', '#1a6aa8'],
 };
 
-// ===== HUD =====
+// ===== HUD: приборная панель с аналоговыми стрелочными индикаторами =====
 const HUDC = {};
+const DIAL_ARC = 'M10.14 32A16 16 0 1 1 37.86 32', DIAL_LEN = 67.02;
+const RES_LABEL = { power: 'Энергия', food: 'Еда', water: 'Вода' };
+function dialSvg(k) {
+  let ticks = '';
+  for (let i = 0; i <= 8; i++) {
+    const a = (-120 + i * 30) * Math.PI / 180, r0 = i % 2 ? 19.2 : 17.6, r1 = 20.6;
+    ticks += `M${(24 + Math.sin(a) * r0).toFixed(2)} ${(24 - Math.cos(a) * r0).toFixed(2)}L${(24 + Math.sin(a) * r1).toFixed(2)} ${(24 - Math.cos(a) * r1).toFixed(2)}`;
+  }
+  return `<svg class="dial" viewBox="0 0 48 48" aria-hidden="true">
+    <circle cx="24" cy="24" r="23.4" fill="url(#hudRim)"/><circle cx="24" cy="24" r="21.2" fill="#070806"/>
+    <circle cx="24" cy="24" r="20.6" fill="url(#hudFace)"/>
+    <path d="${ticks}" stroke="rgba(255,236,200,.5)" stroke-width="1" stroke-linecap="round"/>
+    <path d="${DIAL_ARC}" fill="none" stroke="rgba(0,0,0,.6)" stroke-width="4.2" stroke-linecap="round"/>
+    <path class="d-arc" d="${DIAL_ARC}" fill="none" stroke="var(--c)" stroke-width="3" stroke-linecap="round" stroke-dasharray="${DIAL_LEN}" stroke-dashoffset="${DIAL_LEN}"/>
+    <path d="M${10.14} 32A16 16 0 0 1 14.2 16.8" fill="none" stroke="#ff4a3a" stroke-width="1.1" opacity=".75"/>
+    <g transform="translate(18.9 26.8) scale(.43)" fill="var(--c)" opacity=".85"><path d="${ICON[RES_ICON[k]]}"/></g>
+    <g class="d-needle"><path d="M22.9 25.2 24 6.6l1.1 18.6z" fill="#ff5130"/><path d="M24 6.6l.45 17.8h-.5z" fill="#ffd2c4" opacity=".7"/></g>
+    <circle cx="24" cy="24" r="3.3" fill="url(#hudCap)"/><circle cx="24" cy="24" r="1" fill="#2a2c28"/>
+    <ellipse cx="19" cy="15" rx="13" ry="7.5" fill="url(#hudGlass)" transform="rotate(-28 19 15)"/>
+  </svg>`;
+}
 function initHud() {
   $('#hud').innerHTML = `
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+      <radialGradient id="hudFace" cx="50%" cy="32%" r="72%"><stop offset="0" stop-color="#2e332c"/><stop offset=".72" stop-color="#121510"/><stop offset="1" stop-color="#050605"/></radialGradient>
+      <linearGradient id="hudRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbe39a"/><stop offset=".42" stop-color="#c4912e"/><stop offset=".58" stop-color="#8e6012"/><stop offset="1" stop-color="#3a2604"/></linearGradient>
+      <radialGradient id="hudCap" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#bfc3bd"/><stop offset="1" stop-color="#34362f"/></radialGradient>
+      <linearGradient id="hudGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    </defs></svg>
     <div class="hud-bar">
-      <button class="pill" data-a="dwellers" aria-label="Жители">${pic('people', '#1a4a2a', '#7dff95', 'rgba(120,255,150,.4)')}<b id="h-pop"></b><small id="h-cap"></small></button>
-      <span class="pill hap">${pic('smile', '#6a4a08', '#ffd24a')}<b id="h-hap"></b></span>
+      <button class="chip" data-a="dwellers" aria-label="Жители">${pic('people', '#14532a', '#8dffa4', 'rgba(120,255,150,.35)')}<span class="nix"><b id="h-pop"></b><small id="h-cap"></small></span></button>
+      <span class="chip hap">${pic('smile', '#7a4c06', '#ffd966', 'rgba(255,200,70,.3)')}<span class="nix"><b id="h-hap"></b></span></span>
       <span class="plate"><small>УБЕЖИЩЕ</small><span id="h-vault"></span></span>
-      <span class="pill">${pic('caps', '#5a4a18', '#e8d07a')}<b id="h-caps"></b></span>
-      <button class="pill" data-a="objectives" aria-label="Атом-кола">${pic('quantum', '#0a4a4a', '#5af0e0', 'rgba(90,240,224,.5)')}<b id="h-q"></b></button>
+      <span class="chip">${pic('caps', '#6a5418', '#f2dc8a', 'rgba(240,210,120,.3)')}<span class="nix"><b id="h-caps"></b></span></span>
+      <button class="chip" data-a="objectives" aria-label="Атом-кола">${pic('quantum', '#0b4f52', '#6af6e6', 'rgba(90,240,224,.4)')}<span class="nix"><b id="h-q"></b></span></button>
     </div>
     <div class="gauges">
-      ${['power', 'food', 'water'].map(k => { const c = RES_GRAD[k]; return `<div class="gauge" id="h-${k}" style="--c:${RES_COL[k]};--c3:${c[3]};--c4:${c[4]}">${pic(RES_ICON[k], c[0], c[1], c[2])}<span class="g-track"><i></i></span><b></b></div>`; }).join('')}
+      ${['power', 'food', 'water'].map(k => `<div class="gauge" id="h-${k}" style="--c:${RES_COL[k]}">${dialSvg(k)}<div class="g-val"><b></b><small>${RES_LABEL[k]}</small></div></div>`).join('')}
     </div>`;
   for (const k of ['pop', 'cap', 'hap', 'caps', 'q', 'vault']) HUDC[k] = $('#h-' + k);
-  for (const k of ['power', 'food', 'water']) { const el = $('#h-' + k); HUDC[k] = { el, i: el.querySelector('i'), b: el.querySelector('b') }; }
+  for (const k of ['power', 'food', 'water']) { const el = $('#h-' + k); HUDC[k] = { el, arc: el.querySelector('.d-arc'), nd: el.querySelector('.d-needle'), b: el.querySelector('b'), f: -1 }; }
 }
 function setText(el, v) { if (el._v !== v) { el._v = v; el.textContent = v; } }
 function railBtn(a, cls, icon, label, cnt, extra) {
@@ -138,7 +166,12 @@ function updateHud() {
   setText(HUDC.vault, S.vault);
   for (const k of ['power', 'food', 'water']) {
     const c = resCap(k), v = S.res[k], h = HUDC[k];
-    h.i.style.width = (clamp(v / c, 0, 1) * 100).toFixed(1) + '%';
+    const f = Math.round(clamp(v / c, 0, 1) * 200) / 200;
+    if (f !== h.f) {
+      h.f = f;
+      h.arc.style.strokeDashoffset = (DIAL_LEN * (1 - f)).toFixed(2);
+      h.nd.style.transform = `rotate(${(-120 + 240 * f).toFixed(1)}deg)`;
+    }
     setText(h.b, fmt(v));
     h.el.classList.toggle('low', v < c * 0.15);
   }

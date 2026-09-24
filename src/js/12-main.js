@@ -141,7 +141,7 @@ async function boot() {
   window.addEventListener('pagehide', () => { if (R.playing) saveGame(true); });
   resize();
   const fontsReady = document.fonts && document.fonts.load
-    ? Promise.all([document.fonts.load(`600 14px ${FONT_D}`), document.fonts.load(`700 14px ${FONT_D}`), document.fonts.load(`500 14px ${FONT_M}`), document.fonts.load(`600 14px ${FONT_M}`)]).catch(() => {})
+    ? Promise.all([document.fonts.load(`600 14px ${FONT_D}`), document.fonts.load(`700 14px ${FONT_D}`), document.fonts.load(`500 14px ${FONT_M}`), document.fonts.load(`600 14px ${FONT_M}`), document.fonts.load(`400 14px ${FONT_B}`), document.fonts.load(`600 14px ${FONT_B}`)]).catch(() => {})
     : Promise.resolve();
   await Promise.all([YA.init(), Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))])]);
   makeTextures();

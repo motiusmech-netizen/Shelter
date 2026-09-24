@@ -100,6 +100,7 @@ function render(time) {
   drawActors(t, view);
   for (const r of vis) roomOverlay(r, t);
   drawRobots(t);
+  drawLabels(vis);
   drawBubbles(t);
   if (R.place) drawPlacement(t);
   if (R.selRoom) {
@@ -113,7 +114,6 @@ function render(time) {
     }
   }
   drawFx(t);
-  drawLabels(vis);
   // постобработка
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (!R.vign || R.vign.width !== cv.width || R.vign.height !== cv.height) {
@@ -247,31 +247,19 @@ function roomOverlay(r, t) {
   const def = ROOMS[r.t];
   if (def && (def.kind === 'prod' || def.kind === 'radio') && r.w.length && !r.rdy && !r.off) {
     const col = def.kind === 'radio' ? '#c58af0' : RES_COL[def.res];
-    const py = y + FH - 5.5;
-    ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(ctx, x + 10, py - 1, w - 20, 3, 1.5); ctx.fill();
-    ctx.fillStyle = col; rr(ctx, x + 10.5, py - 0.5, Math.max(2, (w - 21) * clamp(r.p, 0, 1)), 2, 1); ctx.fill();
-    ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = rgba(col, 0.25); rr(ctx, x + 10, py - 2, (w - 20) * clamp(r.p, 0, 1), 5, 2); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+    drawProgress(x + 12, y + FH - 7.2, w - 24, r.p, col, t);
   }
   if (def && def.kind === 'craft' && r.craft) {
-    const py = y + FH - 5.5;
-    ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(ctx, x + 10, py - 1, w - 20, 3, 1.5); ctx.fill();
-    ctx.fillStyle = '#7dff95'; rr(ctx, x + 10.5, py - 0.5, Math.max(2, (w - 21) * clamp(r.craft.p, 0, 1)), 2, 1); ctx.fill();
+    drawProgress(x + 12, y + FH - 7.2, w - 24, r.craft.p, '#7dff95', t);
   }
 }
 function drawLabels(vis) {
-  if (Cam.z < 0.72) return;
-  ctx.font = `600 7px ${FONT_D}`;
-  ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  if (Cam.z < 0.62) return;
+  const k = Math.min(4, Math.max(1, Math.ceil(Cam.z * Cam.dpr)));
   for (const r of vis) {
     if (r.t === 'elev' || r.t === 'door') continue;
-    const def = ROOMS[r.t];
-    const x = roomX(r) + 9, y = roomY(r) + 9;
-    const name = def.n.toUpperCase();
-    const tw = R.labelW[name] || (R.labelW[name] = ctx.measureText(name).width);
-    ctx.fillStyle = 'rgba(8,10,9,.72)'; rr(ctx, x, y, tw + 22, 10, 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(141,255,166,.25)'; ctx.lineWidth = 0.5; rr(ctx, x, y, tw + 22, 10, 2); ctx.stroke();
-    ctx.fillStyle = '#c9ffd2'; ctx.fillText(name, x + 3.5, y + 5.4);
-    for (let i = 0; i < 3; i++) { ctx.fillStyle = i < r.l ? '#ffc24a' : 'rgba(255,255,255,.18)'; ctx.fillRect(x + tw + 6 + i * 4.8, y + 3, 3.2, 4); }
+    const c = roomPlate(r, k);
+    ctx.drawImage(c, roomX(r) + 8, roomY(r) + 8, c._w, c._h);
   }
 }
 function drawDoor(r, x, y, t) {
@@ -404,10 +392,8 @@ function drawActors(t, view) {
     // значки над головой
     const top = p.y - (d.child ? 30 : 46);
     if (d.lu) {
-      const by = top - 6 + Math.sin(t * 5 + d.id) * 2;
-      ctx.fillStyle = 'rgba(8,30,12,.8)'; ctx.beginPath(); ctx.arc(p.x, by, 6, 0, 7); ctx.fill();
-      ctx.strokeStyle = '#7dff95'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.save(); ctx.translate(p.x - 4, by - 4); ctx.scale(8 / 24, 8 / 24); ctx.fillStyle = '#7dff95'; ctx.fill(icoPath('up')); ctx.restore();
+      const by = top - 8 + Math.sin(t * 5 + d.id) * 1.6;
+      drawMedal(p.x, by, 'up', '#3fcf62', 0.42 / clamp(Cam.z, 0.7, 1.4));
     } else if (d.hp < effMax(d) * 0.4) {
       ctx.fillStyle = '#ff5a4a'; ctx.fillRect(p.x - 1.2, top - 7, 2.4, 7); ctx.fillRect(p.x - 3.5, top - 4.7, 7, 2.4);
     }
@@ -427,7 +413,7 @@ function drawActors(t, view) {
     const d = D(R.say.id);
     const p = d && d.st === 'vault' ? dwellerWorldPos(d) : null;
     if (p) {
-      ctx.font = `500 6.5px ${FONT_M}`;
+      ctx.font = `500 7px ${FONT_B}`;
       const tw = Math.min(110, ctx.measureText(R.say.text).width);
       const bx = p.x - tw / 2 - 5, by = p.y - 64;
       ctx.fillStyle = 'rgba(250,246,232,.95)'; rr(ctx, bx, by, tw + 10, 12, 4); ctx.fill();
@@ -481,15 +467,9 @@ function drawActors(t, view) {
   }
 }
 function drawBadge(x, y, what, col) {
-  const s = 1 / Math.max(0.6, Math.min(1.4, Cam.z));
-  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
-  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.arc(0, 1.5, 11, 0, 7); ctx.fill();
-  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 10.5, 0, 7); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.2; ctx.stroke();
-  ctx.fillStyle = '#1a1510';
-  if (what === '!') { ctx.font = `700 14px ${FONT_D}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', 0, 1); }
-  else { ctx.save(); ctx.translate(-7, -7); ctx.scale(14 / 24, 14 / 24); ctx.fill(icoPath(what)); ctx.restore(); }
-  ctx.restore();
+  const s = 0.82 / Math.max(0.6, Math.min(1.4, Cam.z));
+  if (what === '!') drawMedal(x, y, 'x', col, s, { text: '!' });
+  else drawMedal(x, y, what, col, s);
 }
 function drawGrave(x, y) {
   ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, y, 8, 2, 0, 0, 7); ctx.fill();
@@ -518,7 +498,7 @@ function drawRobots(t) {
 }
 
 // ===== Пузыри готовности =====
-function bubblePos(r) { return { x: roomX(r) + roomW(r) * CW / 2, y: roomY(r) + 22 }; }
+function bubblePos(r) { return { x: roomX(r) + roomW(r) * CW / 2, y: roomY(r) + 36 }; }
 function drawBubbles(t) {
   const s = 1 / clamp(Cam.z, 0.55, 1.3);
   for (const r of S.rooms) {
@@ -527,22 +507,16 @@ function drawBubbles(t) {
     else if (r.done) { icon = r.done.k === 'w' ? 'gun' : 'shirt'; col = RAR_COL[itemRar(r.done)]; }
     if (!icon) continue;
     const p = bubblePos(r);
-    const by = p.y + Math.sin(t * 3 + r.id) * 2.5;
-    ctx.save(); ctx.translate(p.x, by); ctx.scale(s, s);
-    ctx.globalCompositeOperation = 'lighter';
-    const gl = ctx.createRadialGradient(0, 0, 8, 0, 0, 26); gl.addColorStop(0, rgba(col, 0.35 + 0.15 * Math.sin(t * 4))); gl.addColorStop(1, rgba(col, 0));
-    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(0, 0, 26, 0, 7); ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.arc(0, 2.5, 15, 0, 7); ctx.fill();
-    const bg = ctx.createRadialGradient(-5, -6, 2, 0, 0, 15); bg.addColorStop(0, '#ffffff'); bg.addColorStop(1, '#d8d2c0');
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(0, 0, 14.5, 0, 7); ctx.fill();
-    ctx.lineWidth = 2.6; ctx.strokeStyle = col; ctx.stroke();
-    ctx.save(); ctx.translate(-9.5, -9.5); ctx.scale(19 / 24, 19 / 24); ctx.fillStyle = shade(col, -0.25); ctx.fill(icoPath(icon)); ctx.restore();
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(-4, -8, 6, 2.4, -0.5, 0, 7); ctx.fill();
+    const ph = t * 3 + r.id;
+    const by = p.y + Math.sin(ph) * 2.2;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const gl = ctx.createRadialGradient(p.x, by, 6 * s, p.x, by, 28 * s); gl.addColorStop(0, rgba(col, 0.3 + 0.12 * Math.sin(t * 4))); gl.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(p.x, by, 28 * s, 0, 7); ctx.fill();
     ctx.restore();
+    const sq = 1 + Math.max(0, Math.sin(ph * 2)) * 0.04;
+    drawMedal(p.x, by, icon, col, s * sq);
   }
 }
-
 // ===== Режим строительства =====
 function drawPlacement(t) {
   const a = 0.5 + 0.25 * Math.sin(t * 4);

@@ -1,6 +1,7 @@
 // ===== Утилиты =====
 const FONT_D = '"Oswald", "Arial Narrow", "Roboto Condensed", sans-serif';
 const FONT_M = '"IBM Plex Mono", "Consolas", monospace';
+const FONT_B = '"Fira Sans Condensed", "Roboto Condensed", "Arial Narrow", sans-serif';
 const rnd = Math.random;
 const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 const rf = (a, b) => a + rnd() * (b - a);
