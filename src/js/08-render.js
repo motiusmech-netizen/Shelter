@@ -125,14 +125,65 @@ function render(time) {
     const vg = g.createRadialGradient(W2 / 2, H2 / 2, Math.min(W2, H2) * 0.45, W2 / 2, H2 / 2, Math.hypot(W2, H2) * 0.62);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.42)');
     g.fillStyle = vg; g.fillRect(0, 0, W2, H2);
+    // цветокоррекция: прохладный верх, тёплый низ
+    const gr = g.createLinearGradient(0, 0, 0, H2);
+    gr.addColorStop(0, 'rgba(40,70,140,.10)'); gr.addColorStop(0.45, 'rgba(40,70,140,0)'); gr.addColorStop(0.6, 'rgba(255,160,70,0)'); gr.addColorStop(1, 'rgba(255,150,60,.07)');
+    g.fillStyle = gr; g.fillRect(0, 0, W2, H2);
   }
   ctx.drawImage(R.vign, 0, 0);
+  // зерно плёнки: только если устройство держит частоту кадров
+  const ft = R.lastRT ? time - R.lastRT : 16; R.lastRT = time;
+  R.ft = (R.ft || 16) * 0.97 + Math.min(ft, 100) * 0.03;
+  if (R.ft > 26) R.noGrain = true; else if (R.ft < 18 && R.noGrain === true && !R.grainLock) R.noGrain = false;
+  if (!R.noGrain) {
+    if (!R.grain) {
+      R.grain = mkCanvas(192, 192); const gg = R.grain.getContext('2d'); const im = gg.createImageData(192, 192);
+      for (let i = 0; i < im.data.length; i += 4) { const v = 128 + (Math.random() - 0.5) * 120; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+      gg.putImageData(im, 0, 0); R.grainPat = ctx.createPattern(R.grain, 'repeat');
+    }
+    ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = 0.06;
+    ctx.save(); ctx.translate((Math.random() * 192) | 0, (Math.random() * 192) | 0);
+    ctx.fillStyle = R.grainPat; ctx.fillRect(-192, -192, cv.width + 192, cv.height + 192);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   ctx.setTransform(Cam.dpr, 0, 0, Cam.dpr, 0, 0);
+  if (!R.flick || t > R.flick.until + 6 + (R.flick.id % 5)) { const cand = vis.filter(q => q.t !== 'elev' && q.t !== 'door' && !q.off); if (cand.length) R.flick = { id: pick(cand).id, until: t + 0.5 + Math.random() * 0.9 }; }
   if (S.incs.length) {
     const a = 0.08 + 0.07 * Math.sin(t * 5) + R.flash * 0.25;
     const g = ctx.createRadialGradient(Cam.vw / 2, Cam.vh / 2, Math.min(Cam.vw, Cam.vh) * 0.35, Cam.vw / 2, Cam.vh / 2, Math.max(Cam.vw, Cam.vh) * 0.75);
     g.addColorStop(0, 'rgba(220,30,20,0)'); g.addColorStop(1, `rgba(220,30,20,${a})`);
     ctx.fillStyle = g; ctx.fillRect(0, 0, Cam.vw, Cam.vh);
+  }
+}
+
+// ===== Пылинки в лучах ламп и мерцание света =====
+function roomMotes(r, x, y, t) {
+  const w = roomW(r) * CW;
+  const n = Math.max(1, Math.round((w - 12) / 44));
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x + 7, y + 7, w - 14, FH - 15); ctx.clip();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < n; i++) {
+    const lx = x + 6 + ((i + 0.5) * (w - 12)) / n;
+    for (let j = 0; j < 7; j++) {
+      const sd = r.id * 13.7 + i * 7.1 + j * 3.3;
+      const px = lx + Math.sin(t * 0.21 + sd) * 16 + Math.sin(t * 0.07 + sd * 2) * 6;
+      const py = y + 18 + ((sd * 23 + t * (1.2 + (j % 3) * 0.5)) % 52);
+      const tw = 0.5 + 0.5 * Math.sin(t * 1.7 + sd * 5);
+      const d = Math.abs(px - lx) / 22;
+      const a = (0.32 + 0.3 * tw) * Math.max(0, 1 - d) * Math.min(1, (py - y - 12) / 10);
+      if (a <= 0.02) continue;
+      ctx.fillStyle = `rgba(255,244,214,${a.toFixed(3)})`;
+      const s = 0.55 + (j % 3) * 0.2;
+      ctx.fillRect(px, py, s, s);
+    }
+  }
+  ctx.restore();
+  // иногда одна лампа моргает
+  if (R.flick && R.flick.id === r.id && t < R.flick.until) {
+    const on = Math.sin(t * 57) + Math.sin(t * 23) > 0.4;
+    if (!on) { ctx.fillStyle = 'rgba(4,6,12,.34)'; ctx.fillRect(x + 6, y + 6, w - 12, FH - 13); }
   }
 }
 
@@ -143,6 +194,7 @@ function roomDynamic(r, t) {
   if (r.off || Cam.z < 0.42) return;
   const a = artFor(r);
   const active = r.w.length > 0 && !incAt(r.id);
+  if (r.t !== 'elev' && Cam.z > 0.55 && !R.noMotes) roomMotes(r, x, y, t);
   ctx.save(); ctx.translate(x, y);
   for (const an of a.anc) {
     switch (an.k) {

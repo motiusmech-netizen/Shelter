@@ -55,29 +55,38 @@ function texture(px, seed, colorFn) {
   return c;
 }
 function makeTextures() {
+  // порода: осадочные слои, мягкий живописный шум, без «трещин»
+  const PAL = [[62, 46, 34], [92, 68, 48], [104, 74, 50], [86, 60, 44], [78, 70, 60], [98, 80, 58]];
+  const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   const rockC = texture(512, 11, (f, r, u, v) => {
-    const base = [84, 63, 46];
-    const strata = 0.08 * Math.sin(v * Math.PI * 2 * 6 + f * 5);
-    let k = 0.66 + f * 0.62 + strata;
-    if (r < 0.009) k *= 0.72;
-    else if (r < 0.018) k *= 0.9;
-    const warm = f > 0.62 ? 12 : 0;
-    return [base[0] * k + warm, base[1] * k + warm * 0.6, base[2] * k];
+    const warp = (f - 0.5) * 0.55 + Math.sin(v * Math.PI * 4) * 0.28 + Math.sin(v * Math.PI * 10 + 1) * 0.1;
+    const s = ((v * 6 + warp) % 1 + 1) % 1, band = Math.floor(((v * 6 + warp) % 6 + 6) % 6);
+    const a = PAL[band], b = PAL[(band + 1) % 6];
+    const edge = s > 0.86 ? (s - 0.86) / 0.14 : 0;
+    let col = lerp3(a, b, edge * edge);
+    const k = 0.82 + f * 0.36 + (Math.sin((v * 41 + f * 3) * 6.283) * 0.03);
+    col = [col[0] * k, col[1] * k, col[2] * k];
+    if (s < 0.035) col = [col[0] * 0.8, col[1] * 0.8, col[2] * 0.8];
+    else if (s < 0.06) col = [col[0] * 1.08 + 6, col[1] * 1.06 + 4, col[2] * 1.04];
+    return col;
   });
   const rg = rockC.getContext('2d');
   const rng = seeded(99);
-  for (let i = 0; i < 140; i++) { // галька
-    const x = rng() * 512, y = rng() * 512, r = 2 + rng() * rng() * 12;
+  // галька и мелкий щебень: объёмные, с бликом и тенью
+  for (let i = 0; i < 260; i++) {
+    const x = rng() * 512, y = rng() * 512, r = 1.2 + rng() * rng() * 7, rot = rng() * 3, sq = 0.55 + rng() * 0.35;
+    const tone = 70 + rng() * 70, warm = rng() * 18;
     for (const dx of [0, -512, 512]) for (const dy of [0, -512, 512]) {
-      const gr = rg.createRadialGradient(x + dx - r * 0.3, y + dy - r * 0.3, r * 0.1, x + dx, y + dy, r);
-      const tone = 60 + rng() * 60;
-      gr.addColorStop(0, `rgba(${tone + 40},${tone + 25},${tone + 10},.55)`);
-      gr.addColorStop(0.7, `rgba(${tone},${tone * 0.8},${tone * 0.6},.45)`);
-      gr.addColorStop(1, 'rgba(20,14,10,0)');
-      rg.fillStyle = gr;
-      rg.beginPath(); rg.ellipse(x + dx, y + dy, r, r * (0.55 + rng() * 0.4), rng() * 3, 0, 7); rg.fill();
+      const X = x + dx, Y = y + dy;
+      if (X < -12 || X > 524 || Y < -12 || Y > 524) continue;
+      rg.fillStyle = 'rgba(18,12,8,.35)'; rg.beginPath(); rg.ellipse(X + r * 0.25, Y + r * 0.3, r, r * sq, rot, 0, 7); rg.fill();
+      const gr = rg.createLinearGradient(X - r, Y - r, X + r, Y + r);
+      gr.addColorStop(0, `rgb(${tone + 34 + warm},${tone + 22 + warm * 0.6},${tone + 8})`);
+      gr.addColorStop(1, `rgb(${tone * 0.55},${tone * 0.45},${tone * 0.36})`);
+      rg.fillStyle = gr; rg.beginPath(); rg.ellipse(X, Y, r, r * sq, rot, 0, 7); rg.fill();
     }
   }
+  for (let i = 0; i < 2600; i++) { const x = rng() * 512, y = rng() * 512, l = rng(); rg.fillStyle = l < 0.5 ? `rgba(20,14,10,${0.18 + l * 0.3})` : `rgba(210,180,140,${(l - 0.5) * 0.22})`; rg.fillRect(x, y, 1 + (l > 0.9 ? 1 : 0), 1); }
   ART.rockC = rockC;
   ART.dirtC = texture(256, 23, (f, r) => { const k = 0.7 + f * 0.6; return [120 * k, 92 * k, 62 * k - (r < 0.03 ? 20 : 0)]; });
   ART.concreteC = texture(256, 37, (f, r) => { const k = 0.8 + f * 0.35 - (r < 0.012 ? 0.25 : 0); return [118 * k, 114 * k, 106 * k]; });

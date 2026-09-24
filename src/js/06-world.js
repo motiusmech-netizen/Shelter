@@ -407,7 +407,7 @@ function rockChunk(ix, iy) {
   drawRockDetails({ x0: x0 - 60, y0: y0 - 60, x1: x0 + S0 + 60, y1: y0 + S0 + 60 });
   ctx = saved;
   g.globalCompositeOperation = 'multiply';
-  g.fillStyle = vgrad(g, SURF, SURF + 1400, ['#ffffff', '#c8b8aa', '#8f8898', '#6a6576']);
+  g.fillStyle = vgrad(g, SURF, SURF + 1600, ['#fff4e6', '#c8b4a2', '#8a8190', '#5e5a6c']);
   g.fillRect(x0, Math.max(y0, SURF), S0, S0);
   const st = WORLD.st;
   if (st && isNight(st)) { g.fillStyle = vgrad(g, SURF - 120, SURF + 80, [st.tint, '#ffffff']); g.fillRect(x0, y0, S0, Math.max(0, SURF + 80 - y0)); }
@@ -428,42 +428,90 @@ function drawRock(view) {
     }
   }
 }
+function boulder(g, x, y, s, rng, tint) {
+  const n = 11, pts = [];
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2, rr2 = s * (0.72 + rng() * 0.34); pts.push([x + Math.cos(a) * rr2 * 1.25, y + Math.sin(a) * rr2 * 0.82]); }
+  const path = new Path2D();
+  pts.forEach((p, i) => { const q = pts[(i + 1) % n]; const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2; i ? path.quadraticCurveTo(p[0], p[1], mx, my) : path.moveTo(mx, my); });
+  path.quadraticCurveTo(pts[0][0], pts[0][1], (pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2);
+  path.closePath();
+  // тень в породе
+  g.save(); g.translate(s * 0.18, s * 0.22); g.fillStyle = 'rgba(14,9,6,.55)'; g.fill(path); g.restore();
+  const base = tint || (rng() < 0.5 ? '#7c6a58' : '#6e5a48');
+  const gr = g.createLinearGradient(x - s, y - s, x + s * 0.8, y + s);
+  gr.addColorStop(0, mixc(base, '#e8d4b4', 0.35)); gr.addColorStop(0.45, base); gr.addColorStop(1, mixc(base, '#120c08', 0.6));
+  g.fillStyle = gr; g.fill(path);
+  g.save(); g.clip(path);
+  // грани и блик
+  g.fillStyle = 'rgba(255,236,200,.12)';
+  g.beginPath(); g.moveTo(x - s * 1.2, y - s * 0.1); g.lineTo(x - s * 0.1, y - s * 0.9); g.lineTo(x + s * 0.4, y - s * 0.2); g.lineTo(x - s * 0.2, y + s * 0.1); g.closePath(); g.fill();
+  g.fillStyle = 'rgba(0,0,0,.18)';
+  g.beginPath(); g.moveTo(x + s * 0.4, y - s * 0.2); g.lineTo(x + s * 1.3, y); g.lineTo(x + s * 0.8, y + s); g.lineTo(x - s * 0.2, y + s * 0.1); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(30,20,14,.35)'; g.lineWidth = 0.6;
+  g.beginPath(); g.moveTo(x - s * 0.1, y - s * 0.9); g.lineTo(x + s * 0.4, y - s * 0.2); g.lineTo(x + s * 0.8, y + s); g.stroke();
+  for (let i = 0; i < 8; i++) { g.fillStyle = `rgba(${rng() < 0.5 ? '255,240,210' : '20,12,8'},.15)`; g.beginPath(); g.arc(x + (rng() - 0.5) * s * 2, y + (rng() - 0.5) * s * 1.4, 0.6 + rng() * 1.4, 0, 7); g.fill(); }
+  g.restore();
+  g.strokeStyle = 'rgba(255,230,190,.22)'; g.lineWidth = 0.8;
+  g.save(); g.clip(path); g.translate(1, 1); g.stroke(path); g.restore();
+}
 function drawRockDetails(view) {
-  const cs = 120;
+  const g = ctx;
+  // непрерывные осадочные прослойки (в мировых координатах, стыкуются между кусками)
+  const layerY = [SURF + 38, SURF + 150, SURF + 290, SURF + 470, SURF + 700, SURF + 980, SURF + 1300, SURF + 1650];
+  for (let li = 0; li < layerY.length; li++) {
+    const ly = layerY[li];
+    if (ly < view.y0 - 40 || ly > view.y1 + 40) continue;
+    const th = 5 + (li % 3) * 3;
+    const wy = x => ly + Math.sin(x * 0.006 + li * 1.7) * 9 + Math.sin(x * 0.017 + li) * 4;
+    g.beginPath();
+    for (let x = view.x0 - 20; x <= view.x1 + 20; x += 12) { const y = wy(x); x === view.x0 - 20 ? g.moveTo(x, y) : g.lineTo(x, y); }
+    for (let x = view.x1 + 20; x >= view.x0 - 20; x -= 12) g.lineTo(x, wy(x) + th + Math.sin(x * 0.05 + li) * 1.5);
+    g.closePath();
+    g.fillStyle = ['rgba(150,112,76,.22)', 'rgba(40,28,20,.28)', 'rgba(120,100,84,.2)'][li % 3]; g.fill();
+    g.strokeStyle = 'rgba(255,225,180,.08)'; g.lineWidth = 0.8;
+    g.beginPath(); for (let x = view.x0 - 20; x <= view.x1 + 20; x += 12) { const y = wy(x); x === view.x0 - 20 ? g.moveTo(x, y) : g.lineTo(x, y); } g.stroke();
+  }
+  const cs = 110;
   const cx0 = Math.floor(view.x0 / cs), cx1 = Math.ceil(view.x1 / cs), cy0 = Math.floor(Math.max(view.y0, SURF - 60) / cs), cy1 = Math.ceil(view.y1 / cs);
-  const lod = true;
   for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
     const rng = seeded(hashStr(cx + ':' + cy));
     const x = cx * cs + rng() * cs, y = cy * cs + rng() * cs;
     if (y < hillY(x) + 14 && x > -40) continue;
     if (x < PORTAL.x0 - 16 && y < GROUND_Y + 14) continue;
     const r = rng();
-    if (r < 0.42) { // валун
-      const s = 10 + rng() * 26;
-      ctx.fillStyle = vgrad(ctx, y - s, y + s, ['#8a7258', '#4e3c2c', '#2e231a']);
-      ctx.beginPath();
-      for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, rr2 = s * (0.75 + rng() * 0.35); ctx.lineTo(x + Math.cos(a) * rr2 * 1.2, y + Math.sin(a) * rr2 * 0.8); }
-      ctx.closePath(); ctx.fill();
-      if (lod) { ctx.strokeStyle = 'rgba(255,225,190,.18)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x - s * 0.1, y - s * 0.1, s * 0.75, Math.PI * 1.1, Math.PI * 1.6); ctx.stroke(); }
-    } else if (r < 0.5 && lod && y > SURF + 200) { // окаменелость
-      ctx.strokeStyle = 'rgba(220,200,170,.35)'; ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      for (let a = 0; a < 12; a += 0.3) { const rr2 = 1 + a * 0.9; ctx.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); }
-      ctx.stroke();
-    } else if (r < 0.56 && lod && y > SURF + 400) { // кристаллы
-      for (let i = 0; i < 4; i++) {
-        const a = -Math.PI / 2 + (rng() - 0.5) * 1.4, l2 = 5 + rng() * 8;
-        ctx.fillStyle = rgba('#7ad8ff', 0.55);
-        ctx.beginPath(); ctx.moveTo(x - 1.5, y); ctx.lineTo(x + Math.cos(a) * l2, y + Math.sin(a) * l2); ctx.lineTo(x + 1.5, y); ctx.fill();
+    if (r < 0.34) boulder(g, x, y, 7 + rng() * 20, rng);
+    else if (r < 0.42) { // скопление гальки
+      for (let i = 0; i < 6; i++) boulder(g, x + (rng() - 0.5) * 26, y + (rng() - 0.5) * 12, 2.4 + rng() * 3.6, rng);
+    } else if (r < 0.48 && y > SURF + 180) { // окаменелость-аммонит
+      const s = 5 + rng() * 5;
+      g.fillStyle = 'rgba(40,28,20,.5)'; g.beginPath(); g.arc(x + 1, y + 1.2, s + 1, 0, 7); g.fill();
+      g.fillStyle = '#b8a282'; g.beginPath(); g.arc(x, y, s + 0.6, 0, 7); g.fill();
+      g.strokeStyle = 'rgba(70,52,36,.8)'; g.lineWidth = 0.8;
+      g.beginPath(); for (let a = 0; a < 15; a += 0.2) { const rr2 = s * (1 - a / 16); g.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); } g.stroke();
+      g.lineWidth = 0.4; for (let a = 0; a < 6.28; a += 0.45) { g.beginPath(); g.moveTo(x + Math.cos(a) * s * 0.45, y + Math.sin(a) * s * 0.45); g.lineTo(x + Math.cos(a) * s, y + Math.sin(a) * s); g.stroke(); }
+    } else if (r < 0.53 && y > SURF + 380) { // кристаллы с подсветкой
+      const hue = rng() < 0.5 ? '#7ad8ff' : '#9dff8a';
+      g.save(); g.globalCompositeOperation = 'lighter';
+      const gl = g.createRadialGradient(x, y - 4, 0, x, y - 4, 22); gl.addColorStop(0, rgba(hue, 0.22)); gl.addColorStop(1, rgba(hue, 0));
+      g.fillStyle = gl; g.beginPath(); g.arc(x, y - 4, 22, 0, 7); g.fill(); g.restore();
+      for (let i = 0; i < 5; i++) {
+        const a = -Math.PI / 2 + (rng() - 0.5) * 1.5, l2 = 5 + rng() * 10, w2 = 1.4 + rng() * 1.2;
+        const tx = x + Math.cos(a) * l2, ty = y + Math.sin(a) * l2, nx = -Math.sin(a) * w2, ny = Math.cos(a) * w2;
+        g.fillStyle = mixc(hue, '#0a1a20', 0.35); g.beginPath(); g.moveTo(x + nx, y + ny); g.lineTo(tx, ty); g.lineTo(x - nx, y - ny); g.closePath(); g.fill();
+        g.fillStyle = rgba('#ffffff', 0.55); g.beginPath(); g.moveTo(x + nx * 0.3, y + ny * 0.3); g.lineTo(tx, ty); g.lineTo(x + nx, y + ny); g.closePath(); g.fill();
       }
-    } else if (r < 0.62 && lod && y < SURF + 160) { // корни
-      ctx.strokeStyle = 'rgba(60,40,24,.6)'; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(x, y - 30); ctx.bezierCurveTo(x + 8, y - 10, x - 6, y + 5, x + 4, y + 24); ctx.stroke();
-      ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(x + 2, y - 8); ctx.lineTo(x + 12, y); ctx.stroke();
-    } else if (r < 0.66 && lod) { // старая труба в породе
-      ctx.fillStyle = vgrad(ctx, y - 2, y + 2, ['#6a5a4a', '#9a7a5a', '#3a2e24']);
-      ctx.fillRect(x - 30, y - 2, 60, 4);
-      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x - 10, y - 2.5, 2, 5);
+    } else if (r < 0.6 && y < SURF + 170) { // корни
+      g.strokeStyle = 'rgba(52,34,20,.75)'; g.lineWidth = 1.6; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x, y - 34); g.bezierCurveTo(x + 9, y - 12, x - 7, y + 6, x + 5, y + 26); g.stroke();
+      g.lineWidth = 0.7; g.beginPath(); g.moveTo(x + 2, y - 10); g.quadraticCurveTo(x + 10, y - 6, x + 15, y + 2); g.moveTo(x - 1, y + 8); g.quadraticCurveTo(x - 9, y + 12, x - 12, y + 20); g.stroke();
+    } else if (r < 0.64) { // ржавая труба
+      g.fillStyle = 'rgba(14,9,6,.5)'; g.fillRect(x - 32, y - 1.5, 64, 6);
+      g.fillStyle = vgrad(g, y - 3, y + 3, ['#a88a6a', '#7a5a3a', '#3a2818']); g.fillRect(x - 32, y - 3, 64, 6);
+      g.fillStyle = 'rgba(140,70,30,.5)'; for (let i = 0; i < 4; i++) g.fillRect(x - 30 + rng() * 56, y - 3, 3 + rng() * 5, 6);
+      g.fillStyle = '#5a4430'; g.fillRect(x - 12, y - 4, 3, 8); g.fillRect(x + 14, y - 4, 3, 8);
+    } else if (r < 0.67 && y > SURF + 120) { // бочка / кости
+      if (rng() < 0.5) { g.fillStyle = 'rgba(14,9,6,.5)'; g.beginPath(); g.ellipse(x + 2, y + 2, 8, 6, 0.4, 0, 7); g.fill(); g.save(); g.translate(x, y); g.rotate(0.5); g.fillStyle = hgradY(g, -5, 5, ['#9a8a4a', '#6a5a2a', '#3a3018']); rr(g, -8, -5, 16, 10, 2); g.fill(); g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(-4, -5, 1, 10); g.fillRect(3, -5, 1, 10); g.fillStyle = '#e8c832'; g.beginPath(); g.arc(0, 0, 1.8, 0, 7); g.fill(); g.restore(); }
+      else { g.strokeStyle = 'rgba(220,206,180,.75)'; g.lineWidth = 1.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(x - 8, y); g.lineTo(x + 8, y - 3); g.moveTo(x - 4, y + 4); g.lineTo(x + 6, y + 5); g.stroke(); g.fillStyle = 'rgba(220,206,180,.8)'; g.beginPath(); g.arc(x + 12, y - 4, 3.2, 0, 7); g.fill(); }
     }
   }
 }
